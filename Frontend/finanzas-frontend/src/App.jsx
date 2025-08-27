@@ -1,12 +1,12 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import {Routes, Route} from 'react-router-dom'
+import IngresosForm from './pages/ingresos';
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+  
 
   return (
+<<<<<<< HEAD:Frontend/finanzas-frontend/src/App.jsx
     <>
       <div>
         <a href="https://vite.dev" target="_blank">
@@ -29,6 +29,11 @@ function App() {
         Click on the Vite and React logos to learn more
       </p>
     </>
+=======
+   <Routes>
+      <Route path='/ingresos' element={<IngresosForm/>}></Route>
+   </Routes>
+>>>>>>> 49c33b4cbc8e1949c63349e6ccf880c9da953413:FrontEnd/src/App.tsx
   )
 }
 
