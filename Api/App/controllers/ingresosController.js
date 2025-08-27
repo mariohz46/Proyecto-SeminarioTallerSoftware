@@ -1,12 +1,9 @@
-const { Ingreso } = require('../models/associations');
-
-const controller = {}
-
+const controller ={};
 controller.insertar = async (req, res) => {
   const { descripcion, fecha, monto, idCategoriaIngreso } = req.body;
 
   try {
-    const nuevoIngreso = await Ingreso.create({
+    const nuevoIngreso = await create({
       descripcion,
       fecha,
       monto,
@@ -20,8 +17,6 @@ controller.insertar = async (req, res) => {
     res.status(500).json({ error: error.message || 'Error al crear el ingreso' });
   }
 };
-
-module.exports = controller;
 
 controller.eliminar = (req,res) =>{
     //codigo para eliminar el registro de un ingreso
