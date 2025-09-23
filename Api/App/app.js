@@ -5,8 +5,7 @@ const App=express();
 
 App.use(express.json());
 App.use(express.urlencoded({extended: false}));
-App.use(require('../App/routes/ingresosRoutes'));
-
+App.use(require('../App/routes/usuariosRoutes'));
 
 
 

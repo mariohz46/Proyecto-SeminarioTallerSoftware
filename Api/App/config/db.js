@@ -1,16 +1,15 @@
 'use strict'
-
-const Sequelize =require('sequelize');
+const {Sequelize} =require('sequelize');
 require('dotenv').config();
 
-const sequelizeInstance = new Sequelize(process.env.DB_NAME,process.env.USER,process.env.PASSWORD, {
+const sequelize= new Sequelize(process.env.DB_NAME,process.env.USER,process.env.PASSWORD, {
     host:process.env.HOST,
     dialect:process.env.DIALECT,
     port:process.env.MYSQL_PORT,
-    dialectOption:{
+    dialectOptions:{
         connectTimeout:10000
     },
-    operatorAliases: "false",
+    operatorAliases: false,
     pool:{
         max: parseInt(process.env.POOL_MAX),
         min: parseInt(process.env.POOL_MIN),
@@ -19,9 +18,4 @@ const sequelizeInstance = new Sequelize(process.env.DB_NAME,process.env.USER,pro
     }
 });
 
-const db={};
-
-db.Sequelize= Sequelize;
-db.sequelizeInstance=sequelizeInstance;
-
-module.exports =db;
+module.exports =sequelize;

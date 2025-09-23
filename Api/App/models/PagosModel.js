@@ -1,5 +1,7 @@
 const {DataTypes}=require('sequelize');
 const sequelize =require('../config/db');
+const Usuarios = sequelize.define('Usuario',{usuarioId: DataTypes.INTEGER});
+const Bancos = sequelize.define('Banco',{bancoId: DataTypes.INTEGER});
 
 const Pagos = sequelize.define('',{
     idPago:{
@@ -9,6 +11,10 @@ const Pagos = sequelize.define('',{
         autoincrement:true
     },
     usuarioId:{
+        type:DataTypes.INTEGER,
+        allownull:true,
+    },
+    bancoId:{
         type:DataTypes.INTEGER,
         allownull:true,
     },
@@ -33,4 +39,12 @@ const Pagos = sequelize.define('',{
 },{
     tableName:'pagos',
     timestamps:true
-})
+});
+
+Usuarios.HasMany(Pagos,{foreignKey:'usuarioId'});
+Pagos.belongsTo(Usuarios,{foreignKey:'usuarioId'});
+
+Bancos.HasMany(Pagos,{foreignKey:'bancoId'});
+Pagos.belongsTo(Bancos,{foreignKey:'bancoId'});
+
+module.exports={Usuarios, Pagos, Bancos};

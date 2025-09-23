@@ -1,21 +1,20 @@
  //Despliegue del app.js
-'use strict'
-
+'use strict';
 require('dotenv').config();
-const DB=require('./App/config/db');
-const App= require('./App/app');
-const port= process.env.port || process.env.APP_PORT;
-const bdPort=process.env.MYSQL_PORT || 3006
-
-DB.sequelizeInstance.sync(bdPort).then(()=>{
-    console.info(`Base de datos sincronizada y alojada en el puerto ${bdPort}`);
-    App.listen(port,function (error) {
-        if (error){
-            console.log('Se obtuvo un error al correr el servidor de expres:',error);
-        }else{
-            console.info(`el servidor de express se esta ejecutando en el puerto ${port}`);
-        }
+const sequelize = require('./App/config/db'); // Importa la instancia directamente
+const App = require('./App/app');
+const port = process.env.PORT || process.env.APP_PORT || 3000;
+sequelize.sync({ force: false })  // Sincroniza modelos con la base de datos
+    .then(() => {
+        console.info('Base de datos sincronizada correctamente');
+        App.listen(port, (error) => {
+            if (error) {
+                console.error('Error al iniciar el servidor Express:', error);
+            } else {
+                console.info(`Servidor Express ejecutándose en el puerto ${port}`);
+            }
+        });
+    })
+    .catch((error) => {
+        console.error('Error en la sincronización de la base de datos:', error);
     });
- }).catch(error=>{
-    console.error('Error en la sincronizacion de la base de datos', error)
- })
