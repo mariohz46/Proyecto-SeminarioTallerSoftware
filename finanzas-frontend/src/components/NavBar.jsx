@@ -23,6 +23,9 @@ export default function Navbar() {
             <li className="nav-item">
               <a className="nav-link active" aria-current="page" href="/">Inicio</a>
             </li>
+           <li className="nav-item">
+              <a className="nav-link" href="/presupuesto/nuevo">Presupuesto</a>
+            </li>
             <li className="nav-item">
               <a className="nav-link" href="/transacciones/nueva">Nueva Transacción</a>
             </li>
