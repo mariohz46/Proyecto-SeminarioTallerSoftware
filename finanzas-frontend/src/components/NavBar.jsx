@@ -27,12 +27,9 @@ export default function Navbar() {
             <li className="nav-item">
              <a className="nav-link" href="/presupuestos">Presupuestos</a>
             </li>
-
+            
             <li className="nav-item">
-              <a className="nav-link" href="/transacciones/nueva">Nueva Transacción</a>
-            </li>
-            <li className="nav-item">
-              <a className="nav-link" href="/historial">Historial de Transacciones</a>
+              <a className="nav-link" href="/historial">Transacciones</a>
             </li>
             <li className="nav-item">
               <a className="nav-link" href="/reportes">Reportes</a>
