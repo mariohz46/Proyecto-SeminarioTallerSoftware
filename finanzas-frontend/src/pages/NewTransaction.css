@@ -1,0 +1,53 @@
+/* src/pages/NewTransaction.css */
+.transaccion-container {
+  max-width: 600px;
+  margin: 2rem auto;
+  background: #111827;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  border: 1px solid #1f2937;
+}
+
+.transaccion-container h2 {
+  margin: 0 0 1rem 0;
+  color: #38bdf8;
+  font-size: 1.4rem;
+}
+
+.fila {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 640px) {
+  .fila {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Reutiliza las clases globales .input y .button si ya existen en index.css.
+   Aquí agregamos algunos ajustes locales: */
+.transaccion-container .input,
+.transaccion-container select.input {
+  background: #0f172a;
+  border: 1px solid #334155;
+  color: #e2e8f0;
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  width: 100%;
+}
+
+.transaccion-container .button.guardar {
+  margin-top: 1rem;
+  width: 100%;
+}
+
+/* Borde visual según el tipo seleccionado */
+.transaccion-container.ingreso {
+  border-left: 6px solid #22c55e;
+}
+.transaccion-container.egreso {
+  border-left: 6px solid #ef4444;
+}
