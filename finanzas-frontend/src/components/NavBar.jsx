@@ -23,11 +23,20 @@ export default function Navbar() {
             <li className="nav-item">
               <a className="nav-link active" aria-current="page" href="/">Inicio</a>
             </li>
+
+           <li className="nav-item">
+            <a className="nav-link" href="/categorias">Categorías</a>
+          </li>
+
+          <li className="nav-item">
+           <a className="nav-link" href="/bancos">Bancos</a>
+          </li>
+
           
             <li className="nav-item">
              <a className="nav-link" href="/presupuestos">Presupuestos</a>
             </li>
-            
+
             <li className="nav-item">
               <a className="nav-link" href="/historial">Transacciones</a>
             </li>
