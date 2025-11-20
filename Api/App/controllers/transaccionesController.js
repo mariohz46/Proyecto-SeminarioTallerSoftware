@@ -9,16 +9,7 @@ try {
         usuarioId:idUsuarioAutenticado,
         creadoEl: new Date()
     }
-    //Validacion tipo de transaccion
-    const tipoTransaccion =['Ingreso','Egreso'];
-    if(!tipoTransaccion.includes(data.tipo)){
-        return res.status(400).json({message:'Tipo de transaccion invalida'});
-    }
-    //Validacion monto mayor a 0
-    if(data.monto <= 0){
-        return res.status(400).json({message:'Monto debe ser mayor a cero.'});
-    }
-
+    
     const nuevaTransaccion = await Transacciones.create(data);
     res.status(201).json(nuevaTransaccion);
 

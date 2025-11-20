@@ -4,3 +4,5 @@ const TransaccionesController =require('../controllers/transaccionesController')
 const {autenticarToken} =require('../services/authTokenServices');
 
 router.post('/nuevaTransaccion',autenticarToken,TransaccionesController.crearTransaccion);
+
+module.exports =router;
