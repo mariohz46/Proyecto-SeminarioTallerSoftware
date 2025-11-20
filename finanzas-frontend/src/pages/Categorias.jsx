@@ -6,9 +6,7 @@ const LS_CATEGORIES = "ff_categories";
 
 const defaultCategories = [
   { id: 1, nombre: "Alimentación", tipo: "Gasto" },
-  { id: 2, nombre: "Transporte", tipo: "Gasto" },
-  { id: 3, nombre: "Servicios", tipo: "Gasto" },
-  { id: 4, nombre: "Entretenimiento", tipo: "Gasto" },
+  
 ];
 
 function loadCategories() {

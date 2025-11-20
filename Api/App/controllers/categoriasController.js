@@ -11,4 +11,4 @@ async function listarCategorias(req,res){
 };
 
 
-module.exports ={listarCategorias};
+module.exports ={listarCategorias}; 
