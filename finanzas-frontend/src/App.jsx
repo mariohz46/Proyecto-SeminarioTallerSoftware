@@ -23,7 +23,7 @@ export default function App() {
       <Navbar />
       <main>
         <Routes>
-          <Route path="/" element={<Dashboard />} />
+           <Route path="/" element={<Navigate to="/login" />} />
           <Route path="/login" element={<Login />} />
           <Route path="/registro" element={<Register />} />
           <Route path="/transacciones/nueva" element={<NewTransaction />} />
