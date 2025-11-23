@@ -1,4 +1,4 @@
-const categoriasService = require('../services/CategoriasServices');
+const {getCategorias,categoriasService} = require('../services/CategoriasServices');
 
 async function crearCategoria(req,res){
     try {
@@ -19,6 +19,7 @@ async function crearCategoria(req,res){
         });
     }
 }
+
 async function listarCategorias(req,res){
     try {
         const categorias = await getCategorias();
@@ -28,6 +29,7 @@ async function listarCategorias(req,res){
     }
 
 };
+
 async function obtenerCategoria(req,res){
     try {
         const {idCategoria}=req.body;

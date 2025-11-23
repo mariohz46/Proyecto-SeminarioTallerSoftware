@@ -5,7 +5,7 @@ async function listarBancos(req,res){
         const bancos = await getBancos();
         res.json(bancos);
     } catch (error) {
-        res.status(500).json({message:"Error al obtener las categorias",error});
+        res.status(500).json({message:"Error al obtener los bancos",error});
     }
 }
 

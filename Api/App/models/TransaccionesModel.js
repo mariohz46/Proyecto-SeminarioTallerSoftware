@@ -1,8 +1,8 @@
 const {DataTypes}=require('sequelize');
 const sequelize =require('../config/db');
-const Usuarios = sequelize.define('Usuario',{usuarioId: DataTypes.INTEGER});
-const Categorias = sequelize.define('Categoria',{categoriaId: DataTypes.INTEGER});
-const Bancos = sequelize.define('Banco',{bancoId: DataTypes.INTEGER});
+const Usuarios = require("./UsuariosModel");
+const Bancos = require("./BancosModel");
+const Categorias = require("./CategoriasModel");
 
 const Transacciones = sequelize.define('transacciones',{
     idTransaccion:{
@@ -45,8 +45,8 @@ const Transacciones = sequelize.define('transacciones',{
 
 });
 
-Usuarios.hasMany(Transacciones,{foreignKey:'usuarioid'});
-Transacciones.belongsTo(Usuarios,{foreignKey:'usuarioid'});
+Usuarios.hasMany(Transacciones,{foreignKey:'usuarioId'});
+Transacciones.belongsTo(Usuarios,{foreignKey:'usuarioId'});
 
 Categorias.hasMany(Transacciones,{foreignKey:'categoriaId'});
 Transacciones.belongsTo(Categorias,{foreignKey:'categoriaId'});

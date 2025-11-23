@@ -23,6 +23,5 @@ const Categorias = sequelize.define('Categorias',{
 },{
     tableName:'categorias',
     timestamps:false
-    timestamps:false
 });
 module.exports = Categorias;
