@@ -9,6 +9,9 @@ import BudgetForm from "./pages/BudgetForm";
 import Presupuestos from "./pages/Presupuestos";
 import Categorias from "./pages/Categorias";
 import Bancos from "./pages/Bancos";
+import PagosHistory from "./pages/PagosHistory";
+import NewPago from "./pages/NewPago";
+
 
 
 
@@ -27,6 +30,9 @@ export default function App() {
           <Route path="/historial" element={<TransactionHistory />} />
           <Route path="/presupuesto/nuevo" element={<BudgetForm />} />
           <Route path="/presupuestos" element={<Presupuestos />} />
+          <Route path="/pagos" element={<PagosHistory />} />
+          <Route path="/pagos/nuevo" element={<NewPago />} />
+
           <Route path="/categorias" element={<Categorias />} />
           <Route path="/bancos" element={<Bancos />} />
 

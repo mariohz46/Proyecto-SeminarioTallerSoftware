@@ -1,0 +1,136 @@
+// src/pages/PagosHistory.jsx
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+
+const money = (n) =>
+  Number(n || 0).toLocaleString("es-MX", {
+    style: "currency",
+    currency: "MXN",
+  });
+
+export default function PagosHistory() {
+  const [pagos, setPagos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const loadPagos = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/pagos");
+        if (!res.ok) {
+          throw new Error("No se pudo obtener el historial de pagos");
+        }
+        const data = await res.json();
+        setPagos(Array.isArray(data) ? data : []);
+      } catch (err) {
+        setError(err.message || "Error inesperado");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadPagos();
+  }, []);
+
+  const formatFecha = (value) => {
+    if (!value) return "—";
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return String(value);
+    return d.toLocaleDateString("es-MX");
+  };
+
+  const getBanco = (pago) =>
+    pago.Banco?.nombre ||
+    pago.banco?.nombre ||
+    pago.bancoNombre ||
+    "—";
+
+  const getUsuario = (pago) =>
+    pago.Usuario?.nombre ||
+    pago.usuario?.nombre ||
+    pago.usuarioNombre ||
+    "—";
+
+  return (
+    <div className="container mt-4">
+      {/* Encabezado con back */}
+      <div className="d-flex align-items-center gap-2 mb-3">
+        <Link
+          to="/"
+          className="text-decoration-none small"
+          style={{ color: "#EC8305" }}
+        >
+          ← Back
+        </Link>
+        <h4 className="m-0">Historial de Pagos</h4>
+      </div>
+
+      <div className="card border-2 border-secondary-subtle">
+        <div className="card-body">
+          {/* Título + botón agregar */}
+          <div className="d-flex justify-content-between align-items-center mb-3">
+            <h5 className="card-title m-0">Pagos registrados</h5>
+            <Link
+              to="/pagos/nuevo"
+              className="btn fw-semibold text-light"
+              style={{ backgroundColor: "#EC8305" }}
+            >
+              + Agregar pago
+            </Link>
+          </div>
+
+          {/* Estados de carga / error */}
+          {loading && <p className="mb-0">Cargando pagos...</p>}
+
+          {error && (
+            <div className="alert alert-danger py-2">
+              ⚠️ {error}
+            </div>
+          )}
+
+          {/* Tabla de resultados */}
+          {!loading && !error && (
+            <>
+              {pagos.length === 0 ? (
+                <p className="mb-0">No hay pagos registrados.</p>
+              ) : (
+                <div className="table-responsive">
+                  <table className="table table-sm table-hover align-middle">
+                    <thead className="table-light">
+                      <tr>
+                        <th>#</th>
+                        <th>Fecha</th>
+                        <th>Banco</th>
+                        <th>Usuario</th>
+                        <th>Monto</th>
+                        <th>Descripción</th>
+                        <th>Estado</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pagos.map((pago, index) => (
+                        <tr key={pago.idPago || index}>
+                          <td>{index + 1}</td>
+                          <td>
+                            {formatFecha(
+                              pago.fechaPago || pago.fecha || pago.createdAt
+                            )}
+                          </td>
+                          <td>{getBanco(pago)}</td>
+                          <td>{getUsuario(pago)}</td>
+                          <td>{money(pago.monto)}</td>
+                          <td>{pago.descripcion || "—"}</td>
+                          <td>{pago.estado || "—"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

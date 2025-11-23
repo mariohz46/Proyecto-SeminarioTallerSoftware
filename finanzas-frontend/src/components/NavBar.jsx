@@ -32,7 +32,10 @@ export default function Navbar() {
            <a className="nav-link" href="/bancos">Bancos</a>
           </li>
 
-          
+          <li className="nav-item">
+           <a className="nav-link" href="/pagos">Pagos</a>
+          </li>
+
             <li className="nav-item">
              <a className="nav-link" href="/presupuestos">Presupuestos</a>
             </li>
