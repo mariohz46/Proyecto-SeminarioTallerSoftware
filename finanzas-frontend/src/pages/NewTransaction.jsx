@@ -20,31 +20,31 @@ export default function NewTransaction() {
     setError(null)
     setOk(false)
 
-    // 🔹 Validación de monto > 0
+    //  Validación de monto > 0
     if (!monto || isNaN(monto) || parseFloat(monto) <= 0) {
       setError("El monto debe ser un número mayor a cero.")
       return
     }
 
-    // 🔹 Validación de descripción
+    //  Validación de descripción
     if (!descripcion || descripcion.trim().length < 3) {
       setError("La descripción debe tener al menos 3 caracteres.")
       return
     }
 
-    // 🔹 Validación de categoría (opcional pero válida si se escribe)
+    //  Validación de categoría (opcional pero válida si se escribe)
     if (categoriaId && (isNaN(categoriaId) || parseInt(categoriaId) <= 0)) {
       setError("La categoría debe ser un número entero positivo.")
       return
     }
 
-    // 🔹 Validación de banco (opcional pero válida si se escribe)
+    // Validación de banco (opcional pero válida si se escribe)
     if (bancoId && (isNaN(bancoId) || parseInt(bancoId) <= 0)) {
       setError("El banco debe ser un número entero positivo.")
       return
     }
 
-    // 🔹 Validación de fecha (no debe ser futura)
+    //  Validación de fecha (no debe ser futura)
     const hoy = new Date()
     if (fecha) {
       const fechaIngresada = new Date(fecha)
