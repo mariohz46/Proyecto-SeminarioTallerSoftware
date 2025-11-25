@@ -1,5 +1,5 @@
 // src/pages/NewTransaction.jsx
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import './NewTransaction.css'
 //import { api } from '../services/api'
 //import { useAuth } from '../hooks/useAuth'
@@ -14,37 +14,54 @@ export default function NewTransaction() {
   const [bancoId, setBancoId] = useState('')
   const [ok, setOk] = useState(false)
   const [error, setError] = useState(null)
+  const [categorias, setCategorias] = useState([])
+  const [bancos, setBancos] = useState([])
+
+  /* El useEffect se utiliza para cargar informacion desde la BD. 
+     En este caso estamos cargando los nombres de la categoria y bancos 
+     para mostrarlos en el combobox del formulario */
+  useEffect(() => {
+    fetch("http://localhost:3000/categorias")
+      .then(res => res.json())
+      .then(data => setCategorias(data))
+      .catch(error => console.log("error cargando categorias", error))
+
+    fetch("http://localhost:3000/bancos")
+      .then(res => res.json())
+      .then(data => setBancos(data))
+      .catch(error => console.log("error cargando bancos", error))
+  }, [])
 
   async function onSubmit(e) {
     e.preventDefault()
     setError(null)
     setOk(false)
 
-    //  Validación de monto > 0
+    // 🔹 Validación de monto > 0
     if (!monto || isNaN(monto) || parseFloat(monto) <= 0) {
       setError("El monto debe ser un número mayor a cero.")
       return
     }
 
-    //  Validación de descripción
+    // 🔹 Validación de descripción
     if (!descripcion || descripcion.trim().length < 3) {
       setError("La descripción debe tener al menos 3 caracteres.")
       return
     }
 
-    //  Validación de categoría (opcional pero válida si se escribe)
+    // 🔹 Validación de categoría (opcional pero válida si se escribe)
     if (categoriaId && (isNaN(categoriaId) || parseInt(categoriaId) <= 0)) {
       setError("La categoría debe ser un número entero positivo.")
       return
     }
 
-    // Validación de banco (opcional pero válida si se escribe)
+    // 🔹 Validación de banco (opcional pero válida si se escribe)
     if (bancoId && (isNaN(bancoId) || parseInt(bancoId) <= 0)) {
       setError("El banco debe ser un número entero positivo.")
       return
     }
 
-    //  Validación de fecha (no debe ser futura)
+    // 🔹 Validación de fecha (no debe ser futura)
     const hoy = new Date()
     if (fecha) {
       const fechaIngresada = new Date(fecha)
@@ -72,7 +89,7 @@ export default function NewTransaction() {
       setDescripcion('')
       setTipo('Egreso')
       setFecha('')
-      setCategoriaId('')
+      //setCategoriaId('')
       setBancoId('')
     } catch (err) {
       setError(err.message)
@@ -141,33 +158,40 @@ export default function NewTransaction() {
                   onChange={e => setFecha(e.target.value)}
                 />
               </div>
-
+              {/* cmbCategoria */}
               <div className="col">
-                <label htmlFor="categoria" className="form-label">Categoría</label>
-                <input
+                <label htmlFor='categoria' className='form-label'>Categoria</label>
+                <select
+                  className="form-select"
                   id="categoria"
-                  type="number"
-                  min="1"
-                  className="form-control"
                   value={categoriaId}
                   onChange={e => setCategoriaId(e.target.value)}
-                  placeholder="ID categoría"
-                />
+                >
+                  <option value="">Seleccione una categoria</option>
+                  {categorias.map(c => (
+                    <option key={c.idCategoria} value={c.idCategoria}>
+                      {c.nombre}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 
             {/* Banco */}
             <div className="mb-3">
-              <label htmlFor="banco" className="form-label">Banco</label>
-              <input
-                id="banco"
-                type="number"
-                min="1"
-                className="form-control"
+              <label className='form-label'>Bancos</label>
+              <select
+                className='form-select'
                 value={bancoId}
                 onChange={e => setBancoId(e.target.value)}
-                placeholder="ID banco"
-              />
+              >
+                <option value="">Seleccione un banco</option>
+                {bancos.map(b => (
+                  <option key={b.idBanco} value={b.idBanco}>
+                    {b.nombre}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* Mensajes */}
@@ -188,5 +212,6 @@ export default function NewTransaction() {
     </div>
   )
 }
+
 
 

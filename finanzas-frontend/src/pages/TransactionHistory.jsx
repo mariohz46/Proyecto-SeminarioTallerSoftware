@@ -53,7 +53,7 @@ export default function TransactionHistory() {
           {/* Título + botón agregar */}
           <div className="d-flex justify-content-between align-items-center mb-3">
             <h5 className="card-title m-0">Historial de Ingresos</h5>
-            <Link to="/nueva" className="btn fw-semibold text-light" style={{ backgroundColor: "#EC8305" }}>
+            <Link to="/transacciones/nueva" className="btn fw-semibold text-light" style={{ backgroundColor: "#EC8305" }}>
               + Agregar Ingreso
             </Link>
           </div>
