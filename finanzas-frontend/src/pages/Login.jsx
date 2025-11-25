@@ -5,11 +5,68 @@ import { Link } from "react-router-dom";
 export default function Login() {
   const [usuario, setUsuario] = useState("");
   const [password, setPassword] = useState("");
+  const [errores, setErrores] = useState({
+    usuario: "",
+    password: "",
+  });
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    const nuevosErrores = {
+      usuario: "",
+      password: "",
+    };
+    let esValido = true;
+
+    const usuarioLimpio = usuario.trim();
+
+    // Validación de nombre de usuario
+    if (!usuarioLimpio) {
+      nuevosErrores.usuario = "El nombre de usuario es obligatorio.";
+      esValido = false;
+    } else {
+      if (usuarioLimpio.length < 3) {
+        nuevosErrores.usuario =
+          "El nombre de usuario debe tener al menos 3 caracteres.";
+        esValido = false;
+      }
+      if (usuarioLimpio.length > 20) {
+        nuevosErrores.usuario =
+          "El nombre de usuario no debe superar los 20 caracteres.";
+        esValido = false;
+      }
+      if (/\d/.test(usuarioLimpio)) {
+  nuevosErrores.usuario = "El nombre de usuario no debe contener números.";
+  esValido = false;
+}
+    }
+
+    // Validación de contraseña
+    if (!password) {
+      nuevosErrores.password = "La contraseña es obligatoria.";
+      esValido = false;
+    } else {
+      if (password.length < 6) {
+        nuevosErrores.password =
+          "La contraseña debe tener al menos 6 caracteres.";
+        esValido = false;
+      }
+      if (password.length > 50) {
+        nuevosErrores.password =
+          "La contraseña no debe superar los 50 caracteres.";
+        esValido = false;
+      }
+    }
+
+    setErrores(nuevosErrores);
+
+    if (!esValido) {
+      return;
+    }
+
     // Aquí luego vas a llamar a tu API de login
-    // console.log({ usuario, password });
+    // console.log({ usuario: usuarioLimpio, password });
   };
 
   return (
@@ -50,7 +107,14 @@ export default function Login() {
                     value={usuario}
                     onChange={(e) => setUsuario(e.target.value)}
                     required
+                    minLength={3}
+                    maxLength={20}
                   />
+                  {errores.usuario && (
+                    <small className="text-danger d-block mt-1">
+                      {errores.usuario}
+                    </small>
+                  )}
                 </div>
 
                 <div className="col-12">
@@ -62,7 +126,14 @@ export default function Login() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
+                    minLength={6}
+                    maxLength={50}
                   />
+                  {errores.password && (
+                    <small className="text-danger d-block mt-1">
+                      {errores.password}
+                    </small>
+                  )}
                 </div>
 
                 <div className="col-12">
