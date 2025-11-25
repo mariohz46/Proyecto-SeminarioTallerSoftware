@@ -1,9 +1,11 @@
+// src/pages/NewTransaction.jsx
 import { useState } from 'react'
+import './NewTransaction.css'
 //import { api } from '../services/api'
 //import { useAuth } from '../hooks/useAuth'
-import './NewTransaction.css'
+
 export default function NewTransaction() {
-//nst { token } = useAuth()
+  //const { token } = useAuth()
   const [monto, setMonto] = useState('')
   const [descripcion, setDescripcion] = useState('')
   const [tipo, setTipo] = useState('Egreso')
@@ -17,16 +19,54 @@ export default function NewTransaction() {
     e.preventDefault()
     setError(null)
     setOk(false)
+
+    // 🔹 Validación de monto > 0
+    if (!monto || isNaN(monto) || parseFloat(monto) <= 0) {
+      setError("El monto debe ser un número mayor a cero.")
+      return
+    }
+
+    // 🔹 Validación de descripción
+    if (!descripcion || descripcion.trim().length < 3) {
+      setError("La descripción debe tener al menos 3 caracteres.")
+      return
+    }
+
+    // 🔹 Validación de categoría (opcional pero válida si se escribe)
+    if (categoriaId && (isNaN(categoriaId) || parseInt(categoriaId) <= 0)) {
+      setError("La categoría debe ser un número entero positivo.")
+      return
+    }
+
+    // 🔹 Validación de banco (opcional pero válida si se escribe)
+    if (bancoId && (isNaN(bancoId) || parseInt(bancoId) <= 0)) {
+      setError("El banco debe ser un número entero positivo.")
+      return
+    }
+
+    // 🔹 Validación de fecha (no debe ser futura)
+    const hoy = new Date()
+    if (fecha) {
+      const fechaIngresada = new Date(fecha)
+      if (fechaIngresada > hoy) {
+        setError("La fecha no puede ser mayor a la actual.")
+        return
+      }
+    }
+
     try {
       const payload = {
         tipo,
         monto: parseFloat(monto),
-        descripcion,
+        descripcion: descripcion.trim(),
         fecha,
         idCategoria: categoriaId ? parseInt(categoriaId) : null,
         idBanco: bancoId ? parseInt(bancoId) : null
       }
-      await api.nuevaTransaccion(payload, token)
+
+      // ⚠ Descomenta cuando la API esté lista
+      // await api.nuevaTransaccion(payload, token)
+
       setOk(true)
       setMonto('')
       setDescripcion('')
@@ -40,103 +80,112 @@ export default function NewTransaction() {
   }
 
   return (
-   <div className="container mt-4">
-  <h2 className="mb-4 text-center">Nueva Transacción</h2>
+    <div className="container mt-4">
+      <h2 className="mb-4 text-center">Nueva Transacción</h2>
 
-  <div className="card mx-auto" style={{ maxWidth: 600 }}>
-    <div className="card-body">
-      <form onSubmit={onSubmit}>
-        {/* Tipo y Monto */}
-        <div className="row mb-3">
-          <div className="col">
-            <label htmlFor="tipo" className="form-label">Tipo</label>
-            <select
-              id="tipo"
-              className="form-select"
-              value={tipo}
-              onChange={e => setTipo(e.target.value)}
+      <div className="card mx-auto" style={{ maxWidth: 600 }}>
+        <div className="card-body">
+          <form onSubmit={onSubmit}>
+            {/* Tipo y Monto */}
+            <div className="row mb-3">
+              <div className="col">
+                <label htmlFor="tipo" className="form-label">Tipo</label>
+                <select
+                  id="tipo"
+                  className="form-select"
+                  value={tipo}
+                  onChange={e => setTipo(e.target.value)}
+                >
+                  <option value="Egreso">Egreso</option>
+                  <option value="Ingreso">Ingreso</option>
+                </select>
+              </div>
+
+              <div className="col">
+                <label htmlFor="monto" className="form-label">Monto</label>
+                <input
+                  id="monto"
+                  type="number"
+                  step="0.01"
+                  min="1"
+                  className="form-control"
+                  value={monto}
+                  onChange={e => setMonto(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Descripción */}
+            <div className="mb-3">
+              <label htmlFor="descripcion" className="form-label">Descripción</label>
+              <input
+                id="descripcion"
+                type="text"
+                className="form-control"
+                value={descripcion}
+                onChange={e => setDescripcion(e.target.value)}
+                required
+              />
+            </div>
+
+            {/* Fecha y Categoría */}
+            <div className="row mb-3">
+              <div className="col">
+                <label htmlFor="fecha" className="form-label">Fecha</label>
+                <input
+                  id="fecha"
+                  type="date"
+                  className="form-control"
+                  value={fecha}
+                  onChange={e => setFecha(e.target.value)}
+                />
+              </div>
+
+              <div className="col">
+                <label htmlFor="categoria" className="form-label">Categoría</label>
+                <input
+                  id="categoria"
+                  type="number"
+                  min="1"
+                  className="form-control"
+                  value={categoriaId}
+                  onChange={e => setCategoriaId(e.target.value)}
+                  placeholder="ID categoría"
+                />
+              </div>
+            </div>
+
+            {/* Banco */}
+            <div className="mb-3">
+              <label htmlFor="banco" className="form-label">Banco</label>
+              <input
+                id="banco"
+                type="number"
+                min="1"
+                className="form-control"
+                value={bancoId}
+                onChange={e => setBancoId(e.target.value)}
+                placeholder="ID banco"
+              />
+            </div>
+
+            {/* Mensajes */}
+            {ok && <div className="alert alert-success py-2">✅ Transacción guardada</div>}
+            {error && <div className="alert alert-danger py-2">⚠️ {error}</div>}
+
+            {/* Botón */}
+            <button
+              type="submit"
+              className="btn btn-primary w-100"
+              style={{ backgroundColor: "#EC8305" }}
             >
-              <option value="Egreso">Egreso</option>
-              <option value="Ingreso">Ingreso</option>
-            </select>
-          </div>
-
-          <div className="col">
-            <label htmlFor="monto" className="form-label">Monto</label>
-            <input
-              id="monto"
-              type="number"
-              step="0.01"
-              className="form-control"
-              value={monto}
-              onChange={e => setMonto(e.target.value)}
-              required
-            />
-          </div>
+              Guardar
+            </button>
+          </form>
         </div>
-
-        {/* Descripción */}
-        <div className="mb-3">
-          <label htmlFor="descripcion" className="form-label">Descripción</label>
-          <input
-            id="descripcion"
-            type="text"
-            className="form-control"
-            value={descripcion}
-            onChange={e => setDescripcion(e.target.value)}
-            required
-          />
-        </div>
-
-        {/* Fecha y Categoría */}
-        <div className="row mb-3">
-          <div className="col">
-            <label htmlFor="fecha" className="form-label">Fecha</label>
-            <input
-              id="fecha"
-              type="date"
-              className="form-control"
-              value={fecha}
-              onChange={e => setFecha(e.target.value)}
-            />
-          </div>
-
-          <div className="col">
-            <label htmlFor="categoria" className="form-label">Categoría</label>
-            <input
-              id="categoria"
-              type="number"
-              className="form-control"
-              value={categoriaId}
-              onChange={e => setCategoriaId(e.target.value)}
-              placeholder="ID categoría"
-            />
-          </div>
-        </div>
-
-        {/* Banco */}
-        <div className="mb-3">
-          <label htmlFor="banco" className="form-label">Banco</label>
-          <input
-            id="banco"
-            type="number"
-            className="form-control"
-            value={bancoId}
-            onChange={e => setBancoId(e.target.value)}
-            placeholder="ID banco"
-          />
-        </div>
-
-        {/* Mensajes */}
-        {ok && <div className="alert alert-success py-2">✅ Transacción guardada</div>}
-        {error && <div className="alert alert-danger py-2">⚠️ {error}</div>}
-
-        {/* Botón */}
-        <button type="submit" className="btn btn-primary w-100" style={{ backgroundColor: "#EC8305" }}>Guardar</button>  {/* //EC8305 */}
-      </form>
+      </div>
     </div>
-  </div>
-</div>
-
   )
 }
+
