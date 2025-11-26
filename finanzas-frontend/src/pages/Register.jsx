@@ -13,7 +13,30 @@ export default function Register() {
     e.preventDefault();
     setError(null);
 
-    // Validación simple
+    const usuarioLimpio = usuario.trim();
+
+    // ✅ Validaciones para el nombre de usuario
+    if (!usuarioLimpio) {
+      setError("El nombre de usuario es obligatorio.");
+      return;
+    }
+
+    if (usuarioLimpio.length < 3) {
+      setError("El nombre de usuario debe tener al menos 3 caracteres.");
+      return;
+    }
+
+    if (usuarioLimpio.length > 20) {
+      setError("El nombre de usuario no debe superar los 20 caracteres.");
+      return;
+    }
+
+    if (/\d/.test(usuarioLimpio)) {
+      setError("El nombre de usuario no debe contener números.");
+      return;
+    }
+
+    // Validación simple 
     if (password !== password2) {
       setError("Las contraseñas no coinciden.");
       return;
