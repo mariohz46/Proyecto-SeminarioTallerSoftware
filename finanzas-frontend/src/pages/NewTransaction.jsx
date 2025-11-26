@@ -15,16 +15,16 @@ export default function NewTransaction() {
   const [categorias, setCategorias] = useState([])
   const [bancos, setBancos] = useState([])
 
-  
+
 
 
 
   /*El useEffect se utiliza para cargar informacion desde la BD. En este caso estamos cargando los nombres de la categoria y bancos para mostrarlos en el combobox del 
   formulario */
-  useEffect(()=>{
-    fetch("http://localhost:3000/categorias").then(res=>res.json()).then(data=>setCategorias(data)).catch(error => console.log("error cargando categorias",error));
-    fetch("http://localhost:3000/bancos").then(res=>res.json()).then(data=>setBancos(data)).catch(error => console.log("error cargando bancos",error));
-  },[]) 
+  useEffect(() => {
+    fetch("http://localhost:3000/categorias/obtenerCategorias").then(res => res.json()).then(data => setCategorias(data)).catch(error => console.log("error cargando categorias", error));
+    fetch("http://localhost:3000/bancos").then(res => res.json()).then(data => setBancos(data)).catch(error => console.log("error cargando bancos", error));
+  }, [])
 
   async function onSubmit(e) {
     e.preventDefault()
@@ -32,20 +32,27 @@ export default function NewTransaction() {
     setOk(false)
     try {
       const payload = {
+        usuarioId: 7,
         tipo,
         monto: parseFloat(monto),
         descripcion,
         fecha,
-        idCategoria: categoriaId ? parseInt(categoriaId) : null,
-        idBanco: bancoId ? parseInt(bancoId) : null
+        categoriaId: categoriaId ? parseInt(categoriaId) : null,
+        bancoId: bancoId ? parseInt(bancoId) : null
       }
-      await api.nuevaTransaccion(payload, token)
+      await fetch("http://localhost:3000/transacciones", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
       setOk(true)
       setMonto('')
       setDescripcion('')
       setTipo('Egreso')
       setFecha('')
-      //setCategoriaId('')
+      setCategoriaId('')
       setBancoId('')
     } catch (err) {
       setError(err.message)
@@ -116,11 +123,11 @@ export default function NewTransaction() {
               {/* cmbCategoria */}
               <div className="col">
                 <label htmlFor='categoria' className='form-label'>Categoria</label>
-                <select className="form-select" id="categoria" value={categoriaId} onChange={e=>setCategoriaId(e.target.value)}>
+                <select className="form-select" id="categoria" value={categoriaId} onChange={e => setCategoriaId(e.target.value)}>
                   <option value="">Seleccione una categoria</option>
                   {categorias.map(c => (
                     <option key={c.idCategoria} value={c.idCategoria}>
-                        {c.nombre}
+                      {c.nombre}
                     </option>
                   ))}
                 </select>
@@ -130,9 +137,9 @@ export default function NewTransaction() {
             {/* Banco */}
             <div className="mb-3">
               <label className='form-label'>Bancos</label>
-              <select className='form-select' value={bancoId} onChange={e=>setBancoId(e.target.value)}>
+              <select className='form-select' value={bancoId} onChange={e => setBancoId(e.target.value)}>
                 <option value="">Seleccione un banco</option>
-                {bancos.map(b =>(
+                {bancos.map(b => (
                   <option key={b.idBanco} value={b.idBanco}>
                     {b.nombre}
                   </option>

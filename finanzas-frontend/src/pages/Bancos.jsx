@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 const LS_BANKS = "ff_bancos";
 
 function loadBanks() {
-  try {
+ try {
     const raw = localStorage.getItem(LS_BANKS);
     if (!raw) return [];
     const list = JSON.parse(raw);
@@ -23,30 +23,57 @@ function saveBanks(list) {
 export default function Bancos() {
   const [bancos, setBancos] = useState([]);
   const [nombre, setNombre] = useState("");
+  
 
   useEffect(() => {
-    setBancos(loadBanks());
-  }, []);
+      const cargar = async () => {
+        try {
+          const res = await fetch("http://localhost:3000/bancos");/*,{
+            headers:{
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`
+            }
+          });
+          if(!res.ok){
+            throw new Error("No autorizado");
+          }*/
+          const data = await res.json();
+          setBancos(data);
+        } catch (error) {
+          console.error("Error al cargar las bancos", error);
+        }
+      };
+      cargar();
+    }, []);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!nombre.trim()) {
-      alert("El nombre del banco es obligatorio.");
+    if(!nombre.trim()){
+      alert("El nombre del banco es obligatorio")
       return;
     }
 
-    const maxId = bancos.reduce((max, b) => (b.idBanco > max ? b.idBanco : max), 0);
-    const nuevoBanco = {
-      idBanco: maxId + 1,
-      nombre: nombre.trim(),
-    };
-
-    const updated = [...bancos, nuevoBanco];
-    setBancos(updated);
-    saveBanks(updated);
-
-    setNombre("");
+    try {
+      const res = await fetch("http://localhost:3000/bancos",{
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json"
+        },
+        body: JSON.stringify({
+        nombre: nombre.trim()
+      })
+      });
+      if(!res.ok){
+        throw new Error("Error al insertar banco!");
+      }
+      const nuevoBanco = await res.json();
+      setBancos([...bancos,nuevoBanco]);
+      setNombre("");
+      alert("Banco registrado exitosamente");
+    } catch (error) {
+      console.error("Error guardando banco",error);
+      alert("Ocurrio un error al guardar el")
+    }
   };
 
   return (

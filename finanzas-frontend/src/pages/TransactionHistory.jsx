@@ -10,13 +10,26 @@ const readAll = () => {
   catch { return []; }
 };
 
+
 export default function TransactionHistory() {
   const [all, setAll] = useState([]);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [category, setCategory] = useState("");
-
-  useEffect(() => setAll(readAll()), []);
+/*UseEffect es para jalar la informacion de la base de datos */
+  useEffect(() => {
+    const cargar = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/transacciones");
+        const data = await res.json();
+        setAll(data);
+      } catch (error) {
+        console.error("Error al cargar las transacciones", error);
+      }
+    };
+    cargar();
+  }, []);
+  
 
   const categories = useMemo(() => {
     const s = new Set(all.map(t => t.category).filter(Boolean));
@@ -39,86 +52,92 @@ export default function TransactionHistory() {
 
   return (
     <>
-    <div class="container">
-      {/* Encabezado con Back */}
-      <div className="d-flex align-items-center gap-2 mb-3">
-        <Link to="/" className="text-decoration-none small " style={{ color: "#EC8305" }}>← Back</Link>
-        <h4 className="m-0">Historial de Transacciones</h4>
-      </div>
-
-      {/* Card grande (marco exterior) */}
-      <div className="card border-2 border-secondary-subtle">
-        <div className="card-body">
-
-          {/* Título + botón agregar */}
-          <div className="d-flex justify-content-between align-items-center mb-3">
-            <h5 className="card-title m-0">Historial de Ingresos</h5>
-            <Link to="/transacciones/nueva" className="btn fw-semibold text-light" style={{ backgroundColor: "#EC8305" }}>
-              + Agregar Ingreso
-            </Link>
-          </div>
-
-          {/* Filtros */}
-          <div className="mb-3">
-            <label className="form-label fw-semibold">Filtros</label>
-            <div className="row g-2 align-items-end">
-              <div className="col-12 col-md-3">
-                <label className="form-label small">Desde</label>
-                <input type="date" className="form-control" value={startDate} onChange={e=>setStartDate(e.target.value)} />
-              </div>
-              <div className="col-12 col-md-3">
-                <label className="form-label small">Hasta</label>
-                <input type="date" className="form-control" value={endDate} onChange={e=>setEndDate(e.target.value)} />
-              </div>
-              <div className="col-12 col-md-3">
-                <label className="form-label small">Categoría</label>
-                <select className="form-select" value={category} onChange={e=>setCategory(e.target.value)}>
-                  <option value="">Todas</option>
-                  {categories.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
-              </div>
-              <div className="col-12 col-md-3">
-                <button className="btn btn-outline-secondary w-100" onClick={clear}>Limpiar filtros</button>
-              </div>
-            </div>
-          </div>
-
-          {/* Marco interno (rectángulo) con la tabla */}
-          <div className="p-2 border border-2 rounded">
-            <div className="table-responsive">
-              <table className="table table-sm align-middle mb-0">
-                <thead className="table-light">
-                  <tr>
-                    <th>#</th>
-                    <th>Fecha</th>
-                    <th>Categoría</th>
-                    <th>Descripción</th>
-                    <th className="text-end">Monto</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.length === 0 ? (
-                    <tr>
-                      <td colSpan="5" className="text-center py-4 text-muted">Sin resultados</td>
-                    </tr>
-                  ) : (
-                    filtered.map((t, i) => (
-                      <tr key={t.id ?? i}>
-                        <td>{i + 1}</td>
-                        <td>{t.date}</td>
-                        <td>{t.category || "-"}</td>
-                        <td>{t.description || "-"}</td>
-                        <td className="text-end fw-semibold">{money(t.amount)}</td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
+      <div className="container">
+        {/* Encabezado con Back */}
+        <div className="d-flex align-items-center gap-2 mb-3">
+          <Link to="/" className="text-decoration-none small " style={{ color: "#EC8305" }}>← Back</Link>
+          <h4 className="m-0">Historial de Transacciones</h4>
         </div>
-      </div>
+
+        {/* Card grande (marco exterior) */}
+        <div className="card border-2 border-secondary-subtle">
+          <div className="card-body">
+
+            {/* Título + botón agregar */}
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <h5 className="card-title m-0">Historial de Ingresos</h5>
+              <Link to="/transacciones/nueva" className="btn fw-semibold text-light" style={{ backgroundColor: "#EC8305" }}>
+                + Agregar Ingreso
+              </Link>
+            </div>
+
+            {/* Filtros */}
+            <div className="mb-3">
+              <label className="form-label fw-semibold">Filtros</label>
+              <div className="row g-2 align-items-end">
+                <div className="col-12 col-md-3">
+                  <label className="form-label small">Desde</label>
+                  <input type="date" className="form-control" value={startDate} onChange={e => setStartDate(e.target.value)} />
+                </div>
+                <div className="col-12 col-md-3">
+                  <label className="form-label small">Hasta</label>
+                  <input type="date" className="form-control" value={endDate} onChange={e => setEndDate(e.target.value)} />
+                </div>
+                <div className="col-12 col-md-3">
+                  <label className="form-label small">Categoría</label>
+                  <select className="form-select" value={category} onChange={e => setCategory(e.target.value)}>
+                    <option value="">Todas</option>
+                    {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div className="col-12 col-md-3">
+                  <button className="btn btn-outline-secondary w-100" onClick={clear}>Limpiar filtros</button>
+                </div>
+              </div>
+            </div>
+
+            {/* Marco interno (rectángulo) con la tabla */}
+            <div className="p-2 border border-2 rounded">
+              <div className="table-responsive">
+                <table className="table table-sm align-middle mb-0">
+                  <thead className="table-light">
+                    <tr>
+                      <th>#</th>
+                      <th>Fecha</th>
+                      <th>Categoría</th>
+                      <th>Descripción</th>
+                      <th className="text-end">Monto</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filtered.length === 0 ? (
+                      <tr>
+                        <td colSpan="5" className="text-center py-4 text-muted">Sin resultados</td>
+                      </tr>
+                    ) : (
+                      filtered.map((t, i) => (
+                        <tr key={t.idTransaccion ?? i}>
+                          <td>{i + 1}</td>
+
+                          <td>{t.fecha ? new Date(t.fecha).toLocaleDateString() : "-"}</td>
+
+                          <td>{t.Categoria ? t.Categoria.nombre : "-"}</td>
+
+                          <td>{t.descripcion || "-"}</td>
+
+                          <td className="text-end fw-semibold">
+                            {money(t.monto)}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+        </div>
       </div>
     </>
   );
