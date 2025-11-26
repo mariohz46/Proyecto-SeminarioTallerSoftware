@@ -10,13 +10,10 @@ export default function Login() {
     password: "",
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const nuevosErrores = {
-      usuario: "",
-      password: "",
-    };
+    const nuevosErrores = { usuario: "", password: "", };
     let esValido = true;
 
     const usuarioLimpio = usuario.trim();
@@ -31,15 +28,15 @@ export default function Login() {
           "El nombre de usuario debe tener al menos 3 caracteres.";
         esValido = false;
       }
-      if (usuarioLimpio.length > 20) {
+      /*if (usuarioLimpio.length > 20) {
         nuevosErrores.usuario =
           "El nombre de usuario no debe superar los 20 caracteres.";
         esValido = false;
       }
       if (/\d/.test(usuarioLimpio)) {
-  nuevosErrores.usuario = "El nombre de usuario no debe contener números.";
-  esValido = false;
-}
+        nuevosErrores.usuario = "El nombre de usuario no debe contener números.";
+        esValido = false;
+      }*/
     }
 
     // Validación de contraseña
@@ -61,13 +58,33 @@ export default function Login() {
 
     setErrores(nuevosErrores);
 
-    if (!esValido) {
-      return;
+    if (!esValido) return;
+    try {
+      const response = await fetch("http://localhost:3000/usuarios/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: usuarioLimpio,
+          password: password,
+        }),
+      });
+      const data = await response.json();
+
+      if(!response.ok){
+        alert(data.message|| "Error en el inicio de sesión");
+        return;
+      }
+      localStorage.setItem("token",data.user.token);
+      localStorage.setItem("usuario",JSON.stringify(data.user.usuario));
+      alert("Inicio de sesion exitoso");
+
+      window.location.href ="/dashboard";
+    }catch(error){
+      console.error("Error en el login",error);
+      alert("Fallo servidor");
     }
 
-    // Aquí luego vas a llamar a tu API de login
-    // console.log({ usuario: usuarioLimpio, password });
-  };
+ }
 
   return (
     <div className="container my-4">
@@ -99,16 +116,15 @@ export default function Login() {
 
               <form onSubmit={handleSubmit} className="row g-3">
                 <div className="col-12">
-                  <label className="form-label">Nombre de usuario</label>
+                  <label className="form-label">Correo</label>
                   <input
-                    type="text"
+                    type="email"
                     className="form-control"
-                    placeholder="tu-usuario"
+                    placeholder="correo@ejemplo.com"
                     value={usuario}
                     onChange={(e) => setUsuario(e.target.value)}
                     required
-                    minLength={3}
-                    maxLength={20}
+                    
                   />
                   {errores.usuario && (
                     <small className="text-danger d-block mt-1">
