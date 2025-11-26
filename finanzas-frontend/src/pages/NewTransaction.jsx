@@ -74,7 +74,7 @@ export default function NewTransaction() {
         categoriaId: categoriaId ? parseInt(categoriaId) : null,
         bancoId: bancoId ? parseInt(bancoId) : null
       }
-<<<<<<< HEAD
+
       await fetch("http://localhost:3000/transacciones", {
         method: "POST",
         headers: {
@@ -82,12 +82,12 @@ export default function NewTransaction() {
         },
         body: JSON.stringify(payload)
       });
-=======
+
 
       // ⚠ Descomenta cuando la API esté lista
       // await api.nuevaTransaccion(payload, token)
 
->>>>>>> 52a0aae05c0817d3236d7a8ac2a2f860f199b8b4
+
       setOk(true)
       setMonto('')
       setDescripcion('')
@@ -165,16 +165,16 @@ export default function NewTransaction() {
               {/* cmbCategoria */}
               <div className="col">
                 <label htmlFor='categoria' className='form-label'>Categoria</label>
-<<<<<<< HEAD
-                <select className="form-select" id="categoria" value={categoriaId} onChange={e => setCategoriaId(e.target.value)}>
-=======
+
+                
+
                 <select
                   className="form-select"
                   id="categoria"
                   value={categoriaId}
                   onChange={e => setCategoriaId(e.target.value)}
                 >
->>>>>>> 52a0aae05c0817d3236d7a8ac2a2f860f199b8b4
+
                   <option value="">Seleccione una categoria</option>
                   {categorias.map(c => (
                     <option key={c.idCategoria} value={c.idCategoria}>
@@ -188,15 +188,14 @@ export default function NewTransaction() {
             {/* Banco */}
             <div className="mb-3">
               <label className='form-label'>Bancos</label>
-<<<<<<< HEAD
-              <select className='form-select' value={bancoId} onChange={e => setBancoId(e.target.value)}>
-=======
+
+
               <select
                 className='form-select'
                 value={bancoId}
                 onChange={e => setBancoId(e.target.value)}
               >
->>>>>>> 52a0aae05c0817d3236d7a8ac2a2f860f199b8b4
+
                 <option value="">Seleccione un banco</option>
                 {bancos.map(b => (
                   <option key={b.idBanco} value={b.idBanco}>
