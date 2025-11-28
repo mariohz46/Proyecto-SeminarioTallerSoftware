@@ -4,24 +4,59 @@ import { Link } from "react-router-dom";
 
 const LS_CATEGORIES = "ff_categories";
 
-const defaultCategories = [
-  { id: 1, nombre: "Alimentación", tipo: "Gasto" },
+// const defaultCategories = [
+//   { id: 1, nombre: "Alimentación", tipo: "Gasto" },
   
-];
+// ];
 
-function loadCategories() {
+async function crearCategoriaAPI(categoria) {
   try {
-    const raw = localStorage.getItem(LS_CATEGORIES);
-    if (!raw) {
-      // si no hay nada, guardamos las default
-      localStorage.setItem(LS_CATEGORIES, JSON.stringify(defaultCategories));
-      return defaultCategories;
+    const res = await fetch("http://localhost:3000/categorias/crearCat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(categoria),
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || "Error al crear categoría");
     }
-    const list = JSON.parse(raw);
-    if (!Array.isArray(list)) return defaultCategories;
-    return list;
-  } catch {
-    return defaultCategories;
+
+    const data = await res.json();
+    return data; 
+  } catch (err) {
+    console.error(err);
+    throw err;
+  }
+}
+
+// function loadCategories() {
+//   try {
+//     const raw = localStorage.getItem(LS_CATEGORIES);
+//     if (!raw) {
+//       // si no hay nada, guardamos las default
+//       localStorage.setItem(LS_CATEGORIES, JSON.stringify(defaultCategories));
+//       return defaultCategories;
+//     }
+//     const list = JSON.parse(raw);
+//     if (!Array.isArray(list)) return defaultCategories;
+//     return list;
+//   } catch {
+//     return defaultCategories;
+//   }
+// }
+
+async function fetchCategoriasAPI() {
+  try {
+    const res = await fetch("http://localhost:3000/categorias/obtenerCategorias"); // GET
+    if (!res.ok) throw new Error("Error al obtener categorías");
+    const data = await res.json();
+    return data;
+  } catch (err) {
+    console.error(err);
+    return [];
   }
 }
 
@@ -32,37 +67,57 @@ function saveCategories(list) {
 export default function Categorias() {
   const [categorias, setCategorias] = useState([]);
   const [nombre, setNombre] = useState("");
-  const [tipo, setTipo] = useState("Gasto");
+  const [tipo, setTipo] = useState("egreso");
 
   useEffect(() => {
-    const list = loadCategories();
+    const loadCategorias = async () => {
+    const list = await fetchCategoriasAPI();
     setCategorias(list);
+    };
+    loadCategorias();
   }, []);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!nombre.trim()) {
       alert("El nombre de la categoría es obligatorio.");
       return;
     }
-
-    // calcular siguiente id
-    const maxId = categorias.reduce((max, c) => (c.id > max ? c.id : max), 0);
     const nuevaCategoria = {
-      id: maxId + 1,
-      nombre: nombre.trim(),
-      tipo,
-    };
-
-    const updated = [...categorias, nuevaCategoria];
-    setCategorias(updated);
-    saveCategories(updated);
-
-    // limpiar formulario
-    setNombre("");
-    setTipo("Gasto");
+    nombre: nombre.trim(),
+    tipo,
+    descripcion: "", 
   };
+
+  try {
+    
+    const categoriaCreada = await crearCategoriaAPI(nuevaCategoria);
+
+    setCategorias(prev => [...prev, categoriaCreada]);
+
+    setNombre("");
+    setTipo("Egreso");
+    } catch (error) {
+      alert("No se pudo crear la categoría: " + error.message);
+    }
+  };
+  //   // calcular siguiente id
+  //   const maxId = categorias.reduce((max, c) => (c.id > max ? c.id : max), 0);
+  //   const nuevaCategoria = {
+  //     id: maxId + 1,
+  //     nombre: nombre.trim(),
+  //     tipo,
+  //   };
+
+  //   const updated = [...categorias, nuevaCategoria];
+  //   setCategorias(updated);
+  //   saveCategories(updated);
+
+  //   // limpiar formulario
+  //   setNombre("");
+  //   setTipo("Gasto");
+  // };
 
   return (
     <div className="container mt-4">
@@ -99,7 +154,7 @@ export default function Categorias() {
                   value={tipo}
                   onChange={(e) => setTipo(e.target.value)}
                 >
-                  <option value="Gasto">Gasto</option>
+                  <option value="Egreso">Egreso</option>
                   <option value="Ingreso">Ingreso</option>
                 </select>
               </div>
@@ -129,21 +184,23 @@ export default function Categorias() {
                     <th style={{ width: "10%" }}>ID</th>
                     <th>Nombre</th>
                     <th style={{ width: "20%" }}>Tipo</th>
+                    <th>Descripcion</th>
                   </tr>
                 </thead>
                 <tbody>
                   {categorias.length === 0 ? (
                     <tr>
-                      <td colSpan="3" className="text-center text-muted">
+                      <td colSpan="4" className="text-center text-muted">
                         No hay categorías registradas.
                       </td>
                     </tr>
                   ) : (
                     categorias.map((c) => (
-                      <tr key={c.id}>
-                        <td>{c.id}</td>
+                      <tr key={c.idCategoria}>
+                        <td>{c.idCategoria}</td>
                         <td>{c.nombre}</td>
                         <td>{c.tipo || "—"}</td>
+                        <td>{c.descripcion}</td>
                       </tr>
                     ))
                   )}

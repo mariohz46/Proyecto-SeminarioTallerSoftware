@@ -18,6 +18,32 @@ function loadBudgets() {
   }
 }
 
+async function fetchPresupuestosAPI() {
+  try {
+    const res = await fetch("http://localhost:3000/presupuestos/obtenerPresupuestos"); // GET
+    if (!res.ok) throw new Error("Error al obtener el presupuesto");
+    const data = await res.json();
+    return data;
+  } catch (err) {
+    console.error(err);
+    return [];
+  }
+}
+
+async function fetchNombreCategoriaAPI() {
+  try {
+    const res = await fetch("http://localhost:3000/categorias/obtenerCategoria/:id"); // GET
+    if (!res.ok) throw new Error("Error al obtener categorías");
+    const data = await res.json();
+    return data.categorias.nombre;
+  } catch (err) {
+    console.error(err);
+    return [];
+  }
+}
+
+
+
 function loadCategories() {
   try {
     const raw = localStorage.getItem(LS_CATEGORIES);
@@ -26,6 +52,18 @@ function loadCategories() {
     return list;
   } catch {
     return defaultCategories;
+  }
+}
+
+async function fetchCategoriasAPI() {
+  try {
+    const res = await fetch("http://localhost:3000/categorias/obtenerCategorias"); // GET
+    if (!res.ok) throw new Error("Error al obtener categorías");
+    const data = await res.json();
+    return data;
+  } catch (err) {
+    console.error(err);
+    return [];
   }
 }
 
@@ -58,9 +96,32 @@ export default function Presupuestos() {
   const [fFechaFin, setFFechaFin] = useState("");
 
   useEffect(() => {
-    setPresupuestos(loadBudgets());
-    setCategorias(loadCategories());
-  }, []);
+  const cargarDatos = async () => {
+    // Cargar categorías desde API
+    const cats = await fetchCategoriasAPI();
+    setCategorias(cats);
+
+    // Cargar presupuestos desde API
+    const presup = await fetchPresupuestosAPI();
+    setPresupuestos(presup);
+  };
+
+  cargarDatos();
+}, []);
+
+  // useEffect(() => {
+  //   const loadCategorias = async () => {
+  //   const list = await fetchCategoriasAPI();
+  //   setCategorias(list);
+    
+  //   loadCategorias();
+
+  //   const presup = await fetchPresupuestosAPI();
+  //   setPresupuestos(presup);
+  // };
+
+  // cargarDatos();
+  // }, []);
 
   const presupuestosFiltrados = useMemo(() => {
     return presupuestos.filter((p) => {
@@ -105,9 +166,9 @@ export default function Presupuestos() {
     setFFechaFin("");
   };
 
-  const obtenerNombreCategoria = (id) => {
-    const found = categorias.find((c) => String(c.id) === String(id));
-    return found ? found.nombre : id;
+  const obtenerNombreCategoria = (idCategoria) => {
+    const categoria = categorias.find((c) => String(c.idCategoria) === String(idCategoria));
+    return categoria ? categoria.nombre : idCategoria;
   };
 
   return (
@@ -193,8 +254,8 @@ export default function Presupuestos() {
                 onChange={(e) => setFCategoriaId(e.target.value)}
               >
                 <option value="">Todas</option>
-                {categorias.map((c) => (
-                  <option key={c.id} value={c.id}>
+                {categorias.map(c => (
+                  <option key={c.idCategoria} value={c.idCategoria}>
                     {c.nombre}
                   </option>
                 ))}
@@ -262,7 +323,7 @@ export default function Presupuestos() {
                   </tr>
                 ) : (
                   presupuestosFiltrados.map((p, i) => (
-                    <tr key={p.idPresupuesto ?? p.id ?? i}>
+                    <tr key={p.idPresupuesto ?? p.idPresupuesto ?? i}>
                       <td>{i + 1}</td>
                       <td>{p.periodo}</td>
                       <td>{obtenerNombreCategoria(p.categoriaId)}</td>

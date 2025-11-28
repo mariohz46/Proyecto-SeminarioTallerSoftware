@@ -1,7 +1,7 @@
 const {DataTypes}=require('sequelize');
 const sequelize =require('../config/db');
-const Usuarios = sequelize.define('Usuario',{usuarioId:DataTypes.INTEGER});
-const Categorias = sequelize.define('Categoria',{categoriaId:DataTypes.INTEGER});
+const Usuarios = require('./UsuariosModel');
+const Categorias = require('./CategoriasModel');
 
 const Presupuestos = sequelize.define('Presupuestos',{
     idPresupuesto:{
@@ -33,13 +33,13 @@ const Presupuestos = sequelize.define('Presupuestos',{
     
 },{
     tableName:'presupuestos',
-    timestamps:true
+    timestamps:false
 });
 
-Usuarios.HasMany(Presupuestos,{foreignKey:'usuarioId'});
+Usuarios.hasMany(Presupuestos,{foreignKey:'usuarioId'});
 Presupuestos.belongsTo(Usuarios,{foreignKey:'usuarioId'});
 
-Categorias.HasMany(Presupuestos,{foreignKey:'categoriaId'});
+Categorias.hasMany(Presupuestos,{foreignKey:'categoriaId'});
 Presupuestos.belongsTo(Categorias,{foreignKey:'categoriaId'});
 
-module.exports= {Presupuestos, Categorias, Usuarios};
+module.exports = Presupuestos;

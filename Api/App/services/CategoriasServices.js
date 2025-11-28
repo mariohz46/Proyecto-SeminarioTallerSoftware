@@ -14,11 +14,11 @@ async function crearCategoria({ nombre, tipo, descripcion }) {
     return { nuevaCategoria };
 }
 async function obtenerCategoria(idCategoria) {
-    const revisarCategoria = await Categoria.findOne({ idCategoria });
+    const revisarCategoria = await Categoria.findOne({ where:{idCategoria} });
     if (!revisarCategoria) {
         throw new Error('La categoria no existe');
     }
-    return { revisarCategoria };
+    return  revisarCategoria;
 }
 
 async function getCategorias() {
@@ -31,16 +31,17 @@ async function modificarCategoria({ idCategoria, nombre, tipo, descripcion }) {
     if (!revisarCategorias) {
         throw new Error('La categoria no existe');
     }
-    const modCategoria = await Categoria.update({
-        where: { idCategoria }(
+    const modCategoria = await Categoria.update(
+        {
             nombre,
             tipo,
             descripcion
-        )
-    });
+        },
+        {where: { idCategoria }}
+    );
     return { modCategoria };
 }
-async function eliminarCategoria({ idCategoria }) {
+async function eliminarCategoria(idCategoria) {
     const revisarCategorias = await Categoria.findOne({ where: { idCategoria } });
     if (!revisarCategorias) {
         throw new Error('La categoria no existe');

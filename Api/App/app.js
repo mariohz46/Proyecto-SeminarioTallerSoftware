@@ -11,6 +11,7 @@ App.use('/usuarios',require('../App/routes/usuariosRoutes'));
 App.use('/transacciones',require('../App/routes/transaccionesRoutes'));
 App.use('/bancos',require('../App/routes/bancosRoutes'));
 App.use('/categorias',require('../App/routes/categoriasRoutes'));
+App.use('/presupuestos',require('../App/routes/presupuestosRoutes'));
 
 
 module.exports=App;
