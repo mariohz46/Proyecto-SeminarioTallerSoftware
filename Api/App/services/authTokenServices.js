@@ -10,10 +10,10 @@ function autenticarToken(req,res,next){
     }
 
     jwt.verify(token,jwt_secreto, (err,usuario)=>{
-        if(error){
+        if(err){
             return res.status(403).json({message:'El token es invalido'});
         }
-        req.user = usuario;
+        req.usuario = usuario;
         next();
     });
 }

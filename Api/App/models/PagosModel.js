@@ -1,28 +1,28 @@
 const {DataTypes}=require('sequelize');
 const sequelize =require('../config/db');
-const Usuarios = sequelize.define('Usuario',{usuarioId: DataTypes.INTEGER});
-const Bancos = sequelize.define('Banco',{bancoId: DataTypes.INTEGER});
+const Usuarios = require('../models/UsuariosModel');
+const Bancos = require('../models/BancosModel');
 
-const Pagos = sequelize.define('',{
+const Pagos = sequelize.define('Pagos',{
     idPago:{
         type:DataTypes.INTEGER,
-        allownull:true,
-        primarykey:true,
-        autoincrement:true
+        allowNull:true,
+        primaryKey:true,
+        autoIncrement:true
     },
     usuarioId:{
         type:DataTypes.INTEGER,
-        allownull:true,
+        allowNull:false,
     },
     bancoId:{
         type:DataTypes.INTEGER,
-        allownull:true,
+        allowNull:false,
     },
     monto:{
         type:DataTypes.DECIMAL(10,2)
     },
     destinatario:{
-        type:DataTypes.CHAR(60)
+        type:DataTypes.STRING(60)
     },
     fechaPago:{
         type:DataTypes.DATE
@@ -31,20 +31,20 @@ const Pagos = sequelize.define('',{
         type:DataTypes.DATE
     },
     descripcion:{
-        type:DataTypes.CHAR(255)
+        type:DataTypes.STRING(255)
     },
     estado:{
-        type:DataTypes.CHAR(10)
+        type:DataTypes.STRING(10)
     }
 },{
     tableName:'pagos',
-    timestamps:true
+    timestamps:false
 });
 
-Usuarios.HasMany(Pagos,{foreignKey:'usuarioId'});
+Usuarios.hasMany(Pagos,{foreignKey:'usuarioId'});
 Pagos.belongsTo(Usuarios,{foreignKey:'usuarioId'});
 
-Bancos.HasMany(Pagos,{foreignKey:'bancoId'});
+Bancos.hasMany(Pagos,{foreignKey:'bancoId'});
 Pagos.belongsTo(Bancos,{foreignKey:'bancoId'});
 
-module.exports={Usuarios, Pagos, Bancos};
+module.exports=Pagos;

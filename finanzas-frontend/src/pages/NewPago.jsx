@@ -6,27 +6,19 @@ export default function NewPago() {
   const [monto, setMonto] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [fechaPago, setFechaPago] = useState("");
+  const [fechaVencimiento, setFechaVencimiento] = useState("");
   const [estado, setEstado] = useState("pendiente");
+  const [destinatario, setDestinatario] = useState("");
   const [bancoId, setBancoId] = useState("");
   const [bancos, setBancos] = useState([]);
   const [ok, setOk] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const token = localStorage.getItem("token");
 
   // Cargar bancos desde la API, igual que en NewTransaction.jsx
   useEffect(() => {
-    const loadBancos = async () => {
-      try {
-        const res = await fetch("http://localhost:3000/bancos");
-        if (!res.ok) throw new Error("No se pudieron cargar los bancos");
-        const data = await res.json();
-        setBancos(Array.isArray(data) ? data : []);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    loadBancos();
+    fetch("http://localhost:3000/bancos").then(res => res.json()).then(data => setBancos(data)).catch(error => console.log("error cargando bancos", error));
   }, []);
 
   const handleSubmit = async (e) => {
@@ -41,18 +33,21 @@ export default function NewPago() {
 
     try {
       const body = {
-        monto: Number(monto),
-        descripcion,
-        fechaPago,
-        estado,
         bancoId: Number(bancoId),
-        // Cuando tengas auth, aquí puedes mandar usuarioId
-        // usuarioId: 1,
+        monto: Number(monto),
+        destinatario,
+        fechaPago,
+        fechaVencimiento,
+        descripcion,
+        estado,
       };
 
-      const res = await fetch("http://localhost:3000/pagos", {
+      const res = await fetch("http://localhost:3000/pagos/registro", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization":`Bearer ${token}`
+         },
         body: JSON.stringify(body),
       });
 
@@ -62,11 +57,13 @@ export default function NewPago() {
       }
 
       setOk(true);
-      setMonto("");
-      setDescripcion("");
-      setFechaPago("");
-      setEstado("pendiente");
       setBancoId("");
+      setMonto("");
+      setDestinatario("");
+      setFechaPago("");
+      setFechaVencimiento("");
+      setDescripcion("");
+      setEstado("pendiente");
 
       // Si quieres que regrese al historial automáticamente, descomenta:
       // navigate("/pagos");
@@ -117,17 +114,28 @@ export default function NewPago() {
             </div>
 
             <div className="col-md-4">
+              <label className="form-label">Fecha de vencimiento del pago</label>
+              <input
+                type="date"
+                className="form-control"
+                value={fechaVencimiento}
+                onChange={(e) => setFechaVencimiento(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="col-md-4">
               <label className="form-label">Banco</label>
               <select
-                className="form-select"
+                className='form-select'
                 value={bancoId}
-                onChange={(e) => setBancoId(e.target.value)}
-                required
+                onChange={e => setBancoId(e.target.value)}
               >
-                <option value="">Selecciona un banco</option>
-                {bancos.map((banco) => (
-                  <option key={banco.idBanco} value={banco.idBanco}>
-                    {banco.nombre}
+
+                <option value="">Seleccione un banco</option>
+                {bancos.map(b => (
+                  <option key={b.idBanco} value={b.idBanco}>
+                    {b.nombre}
                   </option>
                 ))}
               </select>
@@ -144,6 +152,11 @@ export default function NewPago() {
                 <option value="pagado">Pagado</option>
                 <option value="vencido">Vencido</option>
               </select>
+            </div>
+
+            <div className="col-12">
+              <label className="form-label">Destinatario</label>
+              <input className="form-control" type="text" value={destinatario} onChange={(e)=> setDestinatario(e.target.value)} ></input>
             </div>
 
             <div className="col-12">

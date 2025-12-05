@@ -31,7 +31,7 @@ async function getTransacciones(req, res) {
         res.json(data);
     } catch (error) {
         console.error("Error obteniendo transacciones:", error);
-    res.status(500).json({ error: "Error obteniendo transacciones" });
+        res.status(500).json({ error: "Error obteniendo transacciones" });
     }
 }
 

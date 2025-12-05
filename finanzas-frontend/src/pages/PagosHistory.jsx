@@ -1,11 +1,10 @@
-// src/pages/PagosHistory.jsx
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 const money = (n) =>
-  Number(n || 0).toLocaleString("es-MX", {
+  Number(n || 0).toLocaleString("es-HN", {
     style: "currency",
-    currency: "MXN",
+    currency: "HNL",
   });
 
 export default function PagosHistory() {
@@ -14,46 +13,55 @@ export default function PagosHistory() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const loadPagos = async () => {
+    const cargar = async () => {
+      setLoading(true);
+      setError(null);
+
       try {
-        const res = await fetch("http://localhost:3000/pagos");
+        const token = localStorage.getItem("token");
+
+        const res = await fetch("http://localhost:3000/pagos/listar", {
+          headers: {
+            "Authorization": `Bearer ${token}`,
+          },
+        });
+
         if (!res.ok) {
-          throw new Error("No se pudo obtener el historial de pagos");
+          throw new Error("No autorizado, token inválido o expirado");
         }
+
         const data = await res.json();
-        setPagos(Array.isArray(data) ? data : []);
-      } catch (err) {
-        setError(err.message || "Error inesperado");
+
+        if (!Array.isArray(data)) {
+          throw new Error("Respuesta inesperada del servidor");
+        }
+
+        setPagos(data);
+      } catch (error) {
+        console.error("Error cargando pagos:", error);
+        setError(error.message);
+        setPagos([]); 
       } finally {
         setLoading(false);
       }
     };
 
-    loadPagos();
+    cargar();
   }, []);
 
   const formatFecha = (value) => {
     if (!value) return "—";
     const d = new Date(value);
-    if (Number.isNaN(d.getTime())) return String(value);
-    return d.toLocaleDateString("es-MX");
+    if (isNaN(d.getTime())) return value;
+    return d.toLocaleDateString("es-HN");
   };
 
-  const getBanco = (pago) =>
-    pago.Banco?.nombre ||
-    pago.banco?.nombre ||
-    pago.bancoNombre ||
-    "—";
-
-  const getUsuario = (pago) =>
-    pago.Usuario?.nombre ||
-    pago.usuario?.nombre ||
-    pago.usuarioNombre ||
-    "—";
+  const getBanco = (pago) => pago.banco?.nombre || "—";
+  const getUsuario = (pago) => pago.usuario?.nombre || "—";
 
   return (
     <div className="container mt-4">
-      {/* Encabezado con back */}
+      {/* Encabezado */}
       <div className="d-flex align-items-center gap-2 mb-3">
         <Link
           to="/"
@@ -67,7 +75,6 @@ export default function PagosHistory() {
 
       <div className="card border-2 border-secondary-subtle">
         <div className="card-body">
-          {/* Título + botón agregar */}
           <div className="d-flex justify-content-between align-items-center mb-3">
             <h5 className="card-title m-0">Pagos registrados</h5>
             <Link
@@ -79,20 +86,16 @@ export default function PagosHistory() {
             </Link>
           </div>
 
-          {/* Estados de carga / error */}
-          {loading && <p className="mb-0">Cargando pagos...</p>}
+          {loading && <p>Cargando pagos...</p>}
 
           {error && (
-            <div className="alert alert-danger py-2">
-              ⚠️ {error}
-            </div>
+            <div className="alert alert-danger py-2">⚠️ {error}</div>
           )}
 
-          {/* Tabla de resultados */}
           {!loading && !error && (
             <>
               {pagos.length === 0 ? (
-                <p className="mb-0">No hay pagos registrados.</p>
+                <p>No hay pagos registrados.</p>
               ) : (
                 <div className="table-responsive">
                   <table className="table table-sm table-hover align-middle">
@@ -111,11 +114,7 @@ export default function PagosHistory() {
                       {pagos.map((pago, index) => (
                         <tr key={pago.idPago || index}>
                           <td>{index + 1}</td>
-                          <td>
-                            {formatFecha(
-                              pago.fechaPago || pago.fecha || pago.createdAt
-                            )}
-                          </td>
+                          <td>{formatFecha(pago.fechaPago)}</td>
                           <td>{getBanco(pago)}</td>
                           <td>{getUsuario(pago)}</td>
                           <td>{money(pago.monto)}</td>
