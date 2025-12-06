@@ -68,6 +68,7 @@ export default function Categorias() {
   const [categorias, setCategorias] = useState([]);
   const [nombre, setNombre] = useState("");
   const [tipo, setTipo] = useState("egreso");
+  const [descripcion, setDescripcion] = useState("");
 
   useEffect(() => {
     const loadCategorias = async () => {
@@ -87,7 +88,7 @@ export default function Categorias() {
     const nuevaCategoria = {
     nombre: nombre.trim(),
     tipo,
-    descripcion: "", 
+    descripcion: descripcion.trim(), 
   };
 
   try {
@@ -98,6 +99,7 @@ export default function Categorias() {
 
     setNombre("");
     setTipo("Egreso");
+    setDescripcion("");
     } catch (error) {
       alert("No se pudo crear la categoría: " + error.message);
     }
@@ -157,6 +159,18 @@ export default function Categorias() {
                   <option value="Egreso">Egreso</option>
                   <option value="Ingreso">Ingreso</option>
                 </select>
+              </div>
+
+              <div className="col-12 col-md-6">
+                <label className="form-label">Descripción *</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={descripcion}
+                  onChange={(e) => setDescripcion(e.target.value)}
+                  placeholder="Ej. Para usarse en emergencias, imprevistos, etc."
+                  required
+                />
               </div>
 
               <div className="col-12 col-md-2 d-flex align-items-end">

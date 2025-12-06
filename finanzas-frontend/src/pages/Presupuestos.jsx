@@ -10,14 +10,6 @@ const defaultCategories = [
   { id: 4, nombre: "Entretenimiento" },
 ];
 
-function loadBudgets() {
-  try {
-    return JSON.parse(localStorage.getItem(LS_BUDGETS) || "[]");
-  } catch {
-    return [];
-  }
-}
-
 async function fetchPresupuestosAPI() {
   try {
     const res = await fetch("http://localhost:3000/presupuestos/obtenerPresupuestos"); // GET
@@ -27,31 +19,6 @@ async function fetchPresupuestosAPI() {
   } catch (err) {
     console.error(err);
     return [];
-  }
-}
-
-async function fetchNombreCategoriaAPI() {
-  try {
-    const res = await fetch("http://localhost:3000/categorias/obtenerCategoria/:id"); // GET
-    if (!res.ok) throw new Error("Error al obtener categorías");
-    const data = await res.json();
-    return data.categorias.nombre;
-  } catch (err) {
-    console.error(err);
-    return [];
-  }
-}
-
-
-
-function loadCategories() {
-  try {
-    const raw = localStorage.getItem(LS_CATEGORIES);
-    const list = raw ? JSON.parse(raw) : defaultCategories;
-    if (!raw) localStorage.setItem(LS_CATEGORIES, JSON.stringify(list));
-    return list;
-  } catch {
-    return defaultCategories;
   }
 }
 

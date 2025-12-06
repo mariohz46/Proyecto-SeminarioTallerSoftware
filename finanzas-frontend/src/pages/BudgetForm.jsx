@@ -2,25 +2,60 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 const LS_BUDGETS = "ff_budgets";
-const LS_CATEGORIES = "ff_categories"; // si luego las traes del backend, reemplaza el useEffect
+// const LS_CATEGORIES = "ff_categories"; // si luego las traes del backend, reemplaza el useEffect
 
-const defaultCategories = [
-  { id: 1, nombre: "Alimentación" },
-  { id: 2, nombre: "Transporte" },
-  { id: 3, nombre: "Servicios" },
-  { id: 4, nombre: "Entretenimiento" },
-];
+// const defaultCategories = [
+//   { id: 1, nombre: "Alimentación" },
+//   { id: 2, nombre: "Transporte" },
+//   { id: 3, nombre: "Servicios" },
+//   { id: 4, nombre: "Entretenimiento" },
+// ];
 
-function loadCategories() {
+async function fetchCategoriasAPI() {
   try {
-    const raw = localStorage.getItem(LS_CATEGORIES);
-    const list = raw ? JSON.parse(raw) : defaultCategories;
-    if (!raw) localStorage.setItem(LS_CATEGORIES, JSON.stringify(list));
-    return list;
-  } catch {
-    return defaultCategories;
+    const res = await fetch("http://localhost:3000/categorias/obtenerCategorias"); // GET
+    if (!res.ok) throw new Error("Error al obtener categorías");
+    const data = await res.json();
+    return data;
+  } catch (err) {
+    console.error(err);
+    return [];
   }
 }
+
+async function crearPresupuestoAPI(presupuesto) {
+  try {
+    const res = await fetch("http://localhost:3000/presupuestos/crearPres", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(presupuesto),
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || "Error al crear el presupuesto");
+    }
+
+    const data = await res.json();
+    return data; 
+  } catch (err) {
+    console.error(err);
+    throw err;
+  }
+}
+
+// function loadCategories() {
+//   try {
+//     const raw = localStorage.getItem(LS_CATEGORIES);
+//     const list = raw ? JSON.parse(raw) : defaultCategories;
+//     if (!raw) localStorage.setItem(LS_CATEGORIES, JSON.stringify(list));
+//     return list;
+//   } catch {
+//     return defaultCategories;
+//   }
+// }
 
 function saveBudget(budget) {
   // ⬇️ Cambia este bloque por tu fetch POST a /api/presupuestos cuando tengas backend
@@ -31,6 +66,7 @@ function saveBudget(budget) {
 
 export default function BudgetForm() {
   const navigate = useNavigate();
+  const [presupuesto, setPresupuesto] = useState([]);
 
   // Campos del modelo
   const [usuarioId, setUsuarioId] = useState(1); // ajusta según tu auth
@@ -44,10 +80,16 @@ export default function BudgetForm() {
   const [categorias, setCategorias] = useState([]);
 
   useEffect(() => {
-    setCategorias(loadCategories());
-  }, []);
+  const cargarDatos = async () => {
+    // Cargar categorías desde API
+    const cats = await fetchCategoriasAPI();
+    setCategorias(cats);
+  };
 
-  const handleSubmit = (e) => {
+  cargarDatos();
+}, []);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Validaciones simples
@@ -66,7 +108,7 @@ export default function BudgetForm() {
       return;
     }
 
-    const newBudget = {
+    const nuevoPresupuesto = {
       idPresupuesto: crypto.randomUUID(),   // local; en backend será autoincrement
       usuarioId: Number(usuarioId),
       categoriaId: Number(categoriaId),
@@ -79,9 +121,27 @@ export default function BudgetForm() {
       updatedAt: new Date().toISOString(),
     };
 
-    saveBudget(newBudget);
-    // Redirige al inicio (o crea /presupuestos/historial y cámbialo)
-    navigate("/");
+  //   saveBudget(newBudget);
+  //   // Redirige al inicio (o crea /presupuestos/historial y cámbialo)
+  //   navigate("/");
+  // };
+
+  try {
+    
+    const presupuestoCreado = await crearPresupuestoAPI(nuevoPresupuesto);
+
+    setPresupuesto(prev => [...prev, presupuestoCreado]);
+
+    setUsuarioId("");
+    setCategoriaId("");
+    setMonto("");
+    setPeriodo("");
+    setFechaInicio("");
+    setFechaFin("");
+    setDescripcion("");
+    } catch (error) {
+      alert("No se pudo crear el presupuesto: " + error.message);
+    }
   };
 
   return (
@@ -112,7 +172,7 @@ export default function BudgetForm() {
               >
                 <option value="">Selecciona…</option>
                 {categorias.map(c => (
-                  <option key={c.id} value={c.id}>{c.nombre}</option>
+                  <option key={c.idCategoria} value={c.idCategoria}>{c.nombre}</option>
                 ))}
               </select>
             </div>
@@ -133,9 +193,7 @@ export default function BudgetForm() {
                 onChange={(e)=>setPeriodo(e.target.value)}
               >
                 <option>Semanal</option>
-                <option>Quincenal</option>
                 <option>Mensual</option>
-                <option>Trimestral</option>
                 <option>Anual</option>
               </select>
             </div>
