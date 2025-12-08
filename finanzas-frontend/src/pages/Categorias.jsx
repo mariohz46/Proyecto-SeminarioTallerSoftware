@@ -4,11 +4,6 @@ import { Link } from "react-router-dom";
 
 const LS_CATEGORIES = "ff_categories";
 
-// const defaultCategories = [
-//   { id: 1, nombre: "Alimentación", tipo: "Gasto" },
-  
-// ];
-
 async function crearCategoriaAPI(categoria) {
   try {
     const res = await fetch("http://localhost:3000/categorias/crearCat", {
@@ -25,28 +20,12 @@ async function crearCategoriaAPI(categoria) {
     }
 
     const data = await res.json();
-    return data; 
+    return data;
   } catch (err) {
     console.error(err);
     throw err;
   }
 }
-
-// function loadCategories() {
-//   try {
-//     const raw = localStorage.getItem(LS_CATEGORIES);
-//     if (!raw) {
-//       // si no hay nada, guardamos las default
-//       localStorage.setItem(LS_CATEGORIES, JSON.stringify(defaultCategories));
-//       return defaultCategories;
-//     }
-//     const list = JSON.parse(raw);
-//     if (!Array.isArray(list)) return defaultCategories;
-//     return list;
-//   } catch {
-//     return defaultCategories;
-//   }
-// }
 
 async function fetchCategoriasAPI() {
   try {
@@ -64,16 +43,51 @@ function saveCategories(list) {
   localStorage.setItem(LS_CATEGORIES, JSON.stringify(list));
 }
 
+// 🔹 NUEVO: actualizar categoría en API (ajusta el endpoint si tu backend usa otro nombre)
+async function actualizarCategoriaAPI(id, categoria) {
+  const res = await fetch(`http://localhost:3000/categorias/actualizar/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(categoria),
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.message || "Error al actualizar categoría");
+  }
+
+  return await res.json();
+}
+
+// 🔹 NUEVO: deshabilitar categoría (borrado suave)
+async function deshabilitarCategoriaAPI(id) {
+  const res = await fetch(`http://localhost:3000/categorias/deshabilitar/${id}`, {
+    method: "PUT",
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.message || "Error al deshabilitar categoría");
+  }
+
+  return await res.json();
+}
+
 export default function Categorias() {
   const [categorias, setCategorias] = useState([]);
   const [nombre, setNombre] = useState("");
   const [tipo, setTipo] = useState("egreso");
   const [descripcion, setDescripcion] = useState("");
 
+  // 🔹 NUEVO: para saber si estamos editando
+  const [editingId, setEditingId] = useState(null);
+
   useEffect(() => {
     const loadCategorias = async () => {
-    const list = await fetchCategoriasAPI();
-    setCategorias(list);
+      const list = await fetchCategoriasAPI();
+      setCategorias(list);
     };
     loadCategorias();
   }, []);
@@ -85,47 +99,83 @@ export default function Categorias() {
       alert("El nombre de la categoría es obligatorio.");
       return;
     }
-    const nuevaCategoria = {
-    nombre: nombre.trim(),
-    tipo,
-    descripcion: descripcion.trim(), 
-  };
 
-  try {
-    
-    const categoriaCreada = await crearCategoriaAPI(nuevaCategoria);
+    const datosCategoria = {
+      nombre: nombre.trim(),
+      tipo,
+      descripcion: descripcion.trim(),
+    };
 
-    setCategorias(prev => [...prev, categoriaCreada]);
+    try {
+      if (editingId === null) {
+        // 🔸 Crear (misma lógica que ya tenías)
+        const categoriaCreada = await crearCategoriaAPI(datosCategoria);
+        setCategorias((prev) => [...prev, categoriaCreada]);
+      } else {
+        // 🔹 Actualizar
+        const categoriaActualizada = await actualizarCategoriaAPI(
+          editingId,
+          datosCategoria
+        );
 
-    setNombre("");
-    setTipo("Egreso");
-    setDescripcion("");
+        setCategorias((prev) =>
+          prev.map((c) =>
+            c.idCategoria === editingId ? categoriaActualizada : c
+          )
+        );
+      }
+
+      // Limpiar formulario y salir de modo edición
+      setNombre("");
+      setTipo("Egreso");
+      setDescripcion("");
+      setEditingId(null);
     } catch (error) {
-      alert("No se pudo crear la categoría: " + error.message);
+      alert(
+        (editingId
+          ? "No se pudo actualizar la categoría: "
+          : "No se pudo crear la categoría: ") + error.message
+      );
     }
   };
-  //   // calcular siguiente id
-  //   const maxId = categorias.reduce((max, c) => (c.id > max ? c.id : max), 0);
-  //   const nuevaCategoria = {
-  //     id: maxId + 1,
-  //     nombre: nombre.trim(),
-  //     tipo,
-  //   };
 
-  //   const updated = [...categorias, nuevaCategoria];
-  //   setCategorias(updated);
-  //   saveCategories(updated);
+  // 🔹 NUEVO: cargar datos en el formulario para editar
+  const handleEditClick = (categoria) => {
+    setEditingId(categoria.idCategoria);
+    setNombre(categoria.nombre || "");
+    setTipo(categoria.tipo || "Egreso");
+    setDescripcion(categoria.descripcion || "");
+    // Opcional: subir al inicio del formulario
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
-  //   // limpiar formulario
-  //   setNombre("");
-  //   setTipo("Gasto");
-  // };
+  // 🔹 NUEVO: deshabilitar (borrado suave)
+  const handleDeshabilitarClick = async (id) => {
+    if (!window.confirm("¿Deseas deshabilitar esta categoría?")) return;
+
+    try {
+      await deshabilitarCategoriaAPI(id);
+
+      // Actualizar la lista en memoria (la marcamos como Inactiva)
+      setCategorias((prev) =>
+        prev.map((c) =>
+          c.idCategoria === id ? { ...c, estado: "Inactiva" } : c
+        )
+      );
+    } catch (error) {
+      alert("No se pudo deshabilitar la categoría: " + error.message);
+    }
+  };
 
   return (
     <div className="container mt-4">
       {/* Encabezado con Back */}
       <div className="d-flex align-items-center gap-2 mb-3">
-        <Link to="/" className="text-decoration-none small" style={{ color: "#EC8305" }}>
+        <Link
+          to="/"
+          className="text-decoration-none small"
+          style={{ color: "#EC8305" }}
+        >
           ← Back
         </Link>
         <h4 className="m-0">Categorías</h4>
@@ -135,7 +185,9 @@ export default function Categorias() {
         <div className="card-body">
           {/* Formulario arriba */}
           <div className="mb-4">
-            <h5 className="card-title mb-3">Nueva Categoría</h5>
+            <h5 className="card-title mb-3">
+              {editingId ? "Editar Categoría" : "Nueva Categoría"}
+            </h5>
             <form onSubmit={handleSubmit} className="row g-3">
               <div className="col-12 col-md-6">
                 <label className="form-label">Nombre de la categoría *</label>
@@ -179,7 +231,7 @@ export default function Categorias() {
                   className="btn fw-semibold text-light w-100"
                   style={{ backgroundColor: "#EC8305" }}
                 >
-                  Guardar
+                  {editingId ? "Actualizar" : "Guardar"}
                 </button>
               </div>
             </form>
@@ -199,12 +251,15 @@ export default function Categorias() {
                     <th>Nombre</th>
                     <th style={{ width: "20%" }}>Tipo</th>
                     <th>Descripcion</th>
+                    <th className="text-center" style={{ width: "20%" }}>
+                      Acciones {/* 👈 NUEVO */}
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {categorias.length === 0 ? (
                     <tr>
-                      <td colSpan="4" className="text-center text-muted">
+                      <td colSpan="5" className="text-center text-muted">
                         No hay categorías registradas.
                       </td>
                     </tr>
@@ -215,6 +270,25 @@ export default function Categorias() {
                         <td>{c.nombre}</td>
                         <td>{c.tipo || "—"}</td>
                         <td>{c.descripcion}</td>
+                        {/* 👇 Botones NUEVOS */}
+                        <td className="text-center">
+                          <button
+                            className="btn btn-sm btn-warning me-1"
+                            type="button"
+                            onClick={() => handleEditClick(c)}
+                          >
+                            ✏️ Editar
+                          </button>
+                          <button
+                            className="btn btn-sm btn-danger"
+                            type="button"
+                            onClick={() =>
+                              handleDeshabilitarClick(c.idCategoria)
+                            }
+                          >
+                            🚫 Deshabilitar
+                          </button>
+                        </td>
                       </tr>
                     ))
                   )}
@@ -228,3 +302,4 @@ export default function Categorias() {
     </div>
   );
 }
+
