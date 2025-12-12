@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 
 // 🔹 API helpers
 async function crearBancoAPI(payload) {
-  const res = await fetch("http://localhost:3000/bancos", {
+  const res = await fetch("http://localhost:3000/bancos/crear", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -32,7 +32,7 @@ async function deshabilitarBancoAPI(id) {
   const res = await fetch(
     `http://localhost:3000/bancos/deshabilitar/${id}`,
     {
-      method: "PUT",
+      method: "DELETE",
     }
   );
 
@@ -200,13 +200,6 @@ export default function Bancos() {
                         <td>{b.idBanco}</td>
                         <td>{b.nombre}</td>
                         <td className="text-center">
-                          <button
-                            className="btn btn-sm btn-warning me-1"
-                            type="button"
-                            onClick={() => handleEditClick(b)}
-                          >
-                            ✏️ Editar
-                          </button>
                           <button
                             className="btn btn-sm btn-danger"
                             type="button"

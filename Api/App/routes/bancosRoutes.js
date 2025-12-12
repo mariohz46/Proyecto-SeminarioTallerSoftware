@@ -1,7 +1,10 @@
 const express =require('express');
 const router =express.Router();
-const {listarBancos} =require('../controllers/bancosController');
+const bancoController =require('../controllers/bancosController');
+
 /*ruta listar bancos*/
-router.get('/',listarBancos);
+router.get('/',bancoController.listarBancos);
+router.post('/crear', bancoController.crearBanco)
+router.delete('/deshabilitar/:idBanco',bancoController.eliminarBancos);
 
 module.exports=router;

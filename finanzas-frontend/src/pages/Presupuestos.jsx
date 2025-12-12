@@ -58,8 +58,8 @@ async function actualizarPresupuestoAPI(id, payload) {
 // ✅ NUEVO: deshabilitar presupuesto (borrado suave)
 async function deshabilitarPresupuestoAPI(id) {
   const res = await fetch(
-    `http://localhost:3000/presupuestos/deshabilitar/${id}`,
-    { method: "PUT" }
+    `http://localhost:3000/presupuestos/eliminarPresupuesto/${id}`,
+    { method: "DELETE" }
   );
 
   if (!res.ok) {
@@ -371,13 +371,6 @@ export default function Presupuestos() {
 
                       {/* ✅ BOTONES NUEVOS */}
                       <td className="text-center">
-                        <button
-                          type="button"
-                          className="btn btn-sm btn-warning me-1"
-                          onClick={() => handleEditClick(p)}
-                        >
-                          ✏️ Editar
-                        </button>
                         <button
                           type="button"
                           className="btn btn-sm btn-danger"

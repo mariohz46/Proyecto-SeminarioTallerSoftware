@@ -63,8 +63,8 @@ async function actualizarCategoriaAPI(id, categoria) {
 
 // 🔹 NUEVO: deshabilitar categoría (borrado suave)
 async function deshabilitarCategoriaAPI(id) {
-  const res = await fetch(`http://localhost:3000/categorias/deshabilitar/${id}`, {
-    method: "PUT",
+  const res = await fetch(`http://localhost:3000/categorias/eliminarCategoria/${id}`, {
+    method: "DELETE",
   });
 
   if (!res.ok) {
@@ -272,13 +272,6 @@ export default function Categorias() {
                         <td>{c.descripcion}</td>
                         {/* 👇 Botones NUEVOS */}
                         <td className="text-center">
-                          <button
-                            className="btn btn-sm btn-warning me-1"
-                            type="button"
-                            onClick={() => handleEditClick(c)}
-                          >
-                            ✏️ Editar
-                          </button>
                           <button
                             className="btn btn-sm btn-danger"
                             type="button"
