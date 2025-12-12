@@ -3,10 +3,18 @@ const TransaccionesServices = require('../services/TransaccionesServices');
 
 async function crearTransaccion(req, res) {
     try {
-        const idUsuarioAutenticado =  req.body.usuarioId;//cambiar esto cuando ya este implementado el login por el token
+        const idUsuarioAutenticado =  req.body.usuarioId;
+         let fechaMySQL = null;
+
+        if (req.body.fecha) {
+            const partes = req.body.fecha.split("/");
+            
+            fechaMySQL = `${partes[2]}-${partes[1]}-${partes[0]}`;
+        }
 
         const data = {
             ...req.body,
+            fecha:fechaMySQL,
             usuarioId: idUsuarioAutenticado,
             creadoEl: new Date()
         }

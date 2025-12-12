@@ -66,7 +66,7 @@ export default function NewTransaction() {
 
     try {
       const payload = {
-        usuarioId: 7,
+        usuarioId: JSON.parse(localStorage.getItem("usuario")).idUsuario,
         tipo,
         monto: parseFloat(monto),
         descripcion: descripcion.trim(),

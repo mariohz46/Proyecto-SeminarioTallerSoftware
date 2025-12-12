@@ -135,7 +135,7 @@ export default function Navbar() {
                       "nav-link " + (isActive ? "active fw-bold" : "")
                     }
                   >
-                    Reportes
+                    LogOut
                   </NavLink>
                 </li>
               </>

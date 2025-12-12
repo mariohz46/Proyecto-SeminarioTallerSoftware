@@ -1,22 +1,29 @@
-const jwt= require('jsonwebtoken');
-const jwt_secreto =process.env.JWT_SECRET || 'secreto';
+const jwt = require("jsonwebtoken");
+const jwt_secreto = process.env.JWT_SECRET || "secreto";
 
-function autenticarToken(req,res,next){
-    const authHeader=req.headers['authorization'];
-    const token= authHeader && authHeader.split(' ')[1];
+function autenticarToken(req, res, next) {
+    const bearerHeader = req.headers["authorization"];
 
-    if(!token){
-        return res.status(401).json({message:'No se brindo el token'});
+    if (!bearerHeader) {
+        return res.status(403).json({ message: "No se envió el token" });
     }
 
-    jwt.verify(token,jwt_secreto, (err,usuario)=>{
-        if(err){
-            return res.status(403).json({message:'El token es invalido'});
+    const token = bearerHeader.split(" ")[1];
+    console.log("Token recibido:", token);
+
+    jwt.verify(token, jwt_secreto, (err, decodedPayload) => {
+        if (err) {
+            console.log("ERROR AL DECODIFICAR TOKEN:", err);
+            return res.status(403).json({ message: "El token es invalido" });
         }
-        req.usuario = usuario;
+
+        // AQUÍ SÍ EXISTE decodedPayload
+        console.log("Usuario decodificado:", decodedPayload);
+
+        req.usuario = decodedPayload; 
         next();
     });
 }
 
-module.exports ={autenticarToken};
+module.exports = { autenticarToken };
 

@@ -1,9 +1,5 @@
-// src/pages/Dashboard.jsx
-import React, { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
-
-const LS_TRANSACTIONS = "ff_transactions";
-const LS_BUDGETS = "ff_budgets";
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 const money = (n) =>
   Number(n || 0).toLocaleString("es-HN", {
@@ -11,102 +7,74 @@ const money = (n) =>
     currency: "HNL",
   });
 
-function readTransactions() {
-  try {
-    return JSON.parse(localStorage.getItem(LS_TRANSACTIONS) || "[]");
-  } catch {
-    return [];
-  }
-}
-
-function readBudgets() {
-  try {
-    return JSON.parse(localStorage.getItem(LS_BUDGETS) || "[]");
-  } catch {
-    return [];
-  }
-}
-
 export default function Dashboard() {
-  const [tx, setTx] = useState([]);
-  const [budgets, setBudgets] = useState([]);
+  const [dashboard, setDashboard] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    setTx(readTransactions());
-    setBudgets(readBudgets());
-  }, []);
+    const cargarDashboard = async () => {
+      try {
+        const token = localStorage.getItem("token");
 
-  // --- Helpers de fechas para "mes actual" y "mes anterior"
-  const now = new Date();
-  const thisMonth = now.getMonth();
-  const thisYear = now.getFullYear();
+        if (!token) {
+          alert("Tu sesión ha expirado, inicia sesión nuevamente.");
+          navigate("/login");
+          return;
+        }
 
-  const prevMonthDate = new Date(thisYear, thisMonth - 1, 1);
-  const prevMonth = prevMonthDate.getMonth();
-  const prevYear = prevMonthDate.getFullYear();
+        const res = await fetch("http://localhost:3000/dashboard", {
+          headers: {
+            "Authorization": `Bearer ${localStorage.getItem("token")}`
+          }
+        });
 
-  function isSameMonth(d, m, y) {
-    return d.getMonth() === m && d.getFullYear() === y;
-  }
+        if (res.status === 401) {
+          alert("Sesión inválida o expirada.");
+          navigate("/login");
+          return;
+        }
 
-  // --- Partición de transacciones por mes
-  const { currentTx, previousTx } = useMemo(() => {
-    const current = [];
-    const previous = [];
-
-    tx.forEach((t) => {
-      if (!t.date) return;
-      const d = new Date(t.date);
-      if (Number.isNaN(d.getTime())) return;
-
-      if (isSameMonth(d, thisMonth, thisYear)) current.push(t);
-      else if (isSameMonth(d, prevMonth, prevYear)) previous.push(t);
-    });
-
-    return { currentTx: current, previousTx: previous };
-  }, [tx, thisMonth, thisYear, prevMonth, prevYear]);
-
-  // --- Cálculo de ingresos, gastos y ahorro
-  function acumula(lista) {
-    let ingresos = 0;
-    let gastos = 0;
-
-    for (const t of lista) {
-      const tipo = t.tipo || t.type; // por si usas otro nombre
-      const raw = t.amount ?? t.monto ?? 0;
-      const monto = Number(raw) || 0;
-
-      if (tipo === "Ingreso") {
-        ingresos += monto;
-      } else if (tipo === "Egreso") {
-        gastos += monto;
-      } else {
-        // fallback si no hay tipo: positivos = ingresos, negativos = gastos
-        if (monto >= 0) ingresos += monto;
-        else gastos += Math.abs(monto);
+        const data = await res.json();
+        setDashboard(data);
+      } catch (error) {
+        console.error("Error cargando dashboard", error);
+      } finally {
+        setLoading(false);
       }
-    }
+    };
 
-    const ahorro = ingresos - gastos;
-    return { ingresos, gastos, ahorro };
+    cargarDashboard();
+  }, [navigate]);
+
+  if (loading) {
+    return <div className="container p-4">Cargando dashboard...</div>;
   }
 
-  const actual = useMemo(() => acumula(currentTx), [currentTx]);
-  const anterior = useMemo(() => acumula(previousTx), [previousTx]);
+  if (!dashboard) {
+    return <div className="container p-4">No hay datos disponibles.</div>;
+  }
 
-  const balanceDisponible = actual.ahorro;
-  const tasaAhorro =
-    actual.ingresos > 0 ? (actual.ahorro / actual.ingresos) * 100 : 0;
-  const ratioPagos =
-    actual.ingresos > 0 ? (actual.gastos / actual.ingresos) * 100 : 0;
+  // Asignación de valores del backend
+  const balanceDisponible = dashboard.balanceDisponible;
+  const tasaAhorro = dashboard.tasaAhorro;
+  const ratioPagos = dashboard.relacionPagosIngresos;
 
-  const totalPresupuestado = useMemo(
-    () => budgets.reduce((acc, b) => acc + Number(b.monto || 0), 0),
-    [budgets]
-  );
+  const actual = {
+    ingresos: dashboard.ingresosActual,
+    gastos: dashboard.gastosActual,
+    ahorro: dashboard.ahorroNetoActual,
+  };
 
+  const anterior = {
+    ingresos: dashboard.ingresosAnterior,
+    gastos: dashboard.gastosAnterior,
+    ahorro: dashboard.ahorroNetoAnterior,
+  };
+
+  const totalPresupuestado = dashboard.totalPresupuesto;
   const estadoEsCritico = actual.gastos > actual.ingresos;
-
+  console.log("DATA DEL DASHBOARD:", dashboard);
   return (
     <div className="container my-4">
       {/* -------- VISTA RÁPIDA -------- */}
@@ -163,8 +131,8 @@ export default function Dashboard() {
                     {tasaAhorro <= 0
                       ? "Sin ahorro"
                       : tasaAhorro < 10
-                      ? "Mejorar"
-                      : "Buen nivel"}
+                        ? "Mejorar"
+                        : "Buen nivel"}
                   </span>
                 </div>
               </div>
@@ -182,8 +150,8 @@ export default function Dashboard() {
                     {ratioPagos <= 50
                       ? "Saludable"
                       : ratioPagos <= 80
-                      ? "En observación"
-                      : "Crítico"}
+                        ? "En observación"
+                        : "Crítico"}
                   </span>
                 </div>
               </div>
@@ -235,11 +203,7 @@ export default function Dashboard() {
               </small>
             </div>
             <div className="btn-group">
-              <button
-                type="button"
-                className="btn btn-sm text-light"
-                style={{ backgroundColor: "#091057" }}
-              >
+              <button type="button" className="btn btn-sm text-light" style={{ backgroundColor: "#091057" }}>
                 Mensual
               </button>
               <button type="button" className="btn btn-sm btn-outline-secondary">
@@ -256,17 +220,7 @@ export default function Dashboard() {
             <div className="col-12 col-md-4">
               <div className="border rounded-3 p-3 h-100">
                 <p className="fw-semibold mb-2">
-                  $ Ingresos Netos{" "}
-                  <span className="text-muted small">
-                    ({((actual.ingresos || 0) - (anterior.ingresos || 0) >= 0
-                      ? "↑"
-                      : "↓") +
-                      " " +
-                      Math.abs(
-                        actual.ingresos - anterior.ingresos
-                      ).toLocaleString("es-HN")}
-                    )
-                  </span>
+                  $ Ingresos Netos
                 </p>
                 <div className="small text-muted">Actual:</div>
                 <div className="fw-semibold">{money(actual.ingresos)}</div>
@@ -277,7 +231,7 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Gastos totales */}
+            {/* Gastos */}
             <div className="col-12 col-md-4">
               <div className="border rounded-3 p-3 h-100">
                 <p className="fw-semibold mb-2">📊 Gastos Totales</p>
@@ -290,7 +244,7 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Ahorro neto + presupuesto */}
+            {/* Ahorro */}
             <div className="col-12 col-md-4">
               <div className="border rounded-3 p-3 h-100">
                 <p className="fw-semibold mb-2">🎯 Ahorro Neto</p>
@@ -308,8 +262,6 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Enlaces de acción */}
-          
           <div className="mt-3 d-flex flex-wrap gap-2">
             <Link to="/historial" className="btn btn-outline-secondary btn-sm">
               Ver historial de transacciones

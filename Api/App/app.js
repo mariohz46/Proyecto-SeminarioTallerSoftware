@@ -13,6 +13,7 @@ App.use('/bancos',require('../App/routes/bancosRoutes'));
 App.use('/categorias',require('../App/routes/categoriasRoutes'));
 App.use('/presupuestos',require('../App/routes/presupuestosRoutes'));
 App.use('/pagos',require('../App/routes/pagosRoutes'));
+App.use('/dashboard',require('../App/routes/dashboardRoutes'));
 
 
 
