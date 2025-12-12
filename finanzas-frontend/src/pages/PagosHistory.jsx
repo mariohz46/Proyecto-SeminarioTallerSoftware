@@ -150,19 +150,13 @@ export default function PagosHistory() {
                           <td>{pago.estado || "—"}</td>
                           {/* 👇 Botones agregados */}
                           <td className="text-center">
-                            <button
-                              className="btn btn-sm btn-warning me-1"
-                              onClick={() => navigate(`/pagos/editar/${pago.idPago}`)}
-                            >
-                              ✏️ Editar
-                            </button>
-                            <button
-                              className="btn btn-sm btn-danger"
-                              onClick={() => deshabilitarPago(pago.idPago)}
-                            >
-                              🚫 Deshabilitar
-                            </button>
-                          </td>
+  <button
+    className="btn btn-sm btn-danger"
+    onClick={() => deshabilitarPago(pago.idPago)}
+  >
+    🚫 Deshabilitar
+  </button>
+</td>
                         </tr>
                       ))}
                     </tbody>
