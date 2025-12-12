@@ -35,4 +35,20 @@ async function getTransacciones(req, res) {
     }
 }
 
-module.exports = { crearTransaccion, getTransacciones };
+async function eliminarTransacciones(req,res){
+    try {
+        const {id} =req.params;
+        const transaccion = await Transacciones.findByPk(id);
+        if(!transaccion){
+            console.log("Transaccion no encontrada");
+            return res.status(404).json({message:"Transaccion no encontrada"})
+        }
+        await transaccion.destroy();
+        res.json({message:"Transaccion eliminada correctamente"});
+    } catch (error) {
+        console.error("Error eliminando la transaccion", error);
+        res.status(500).json({error:"Error eliminando la transaccion"});
+    }
+}
+
+module.exports = { crearTransaccion, getTransacciones, eliminarTransacciones};
