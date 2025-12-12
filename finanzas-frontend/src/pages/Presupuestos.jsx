@@ -12,7 +12,9 @@ const defaultCategories = [
 
 async function fetchPresupuestosAPI() {
   try {
-    const res = await fetch("http://localhost:3000/presupuestos/obtenerPresupuestos"); // GET
+    const res = await fetch(
+      "http://localhost:3000/presupuestos/obtenerPresupuestos"
+    ); // GET
     if (!res.ok) throw new Error("Error al obtener el presupuesto");
     const data = await res.json();
     return data;
@@ -32,6 +34,40 @@ async function fetchCategoriasAPI() {
     console.error(err);
     return [];
   }
+}
+
+// ✅ NUEVO: actualizar presupuesto
+async function actualizarPresupuestoAPI(id, payload) {
+  const res = await fetch(
+    `http://localhost:3000/presupuestos/actualizar/${id}`,
+    {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    }
+  );
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.message || "Error al actualizar presupuesto");
+  }
+
+  return await res.json();
+}
+
+// ✅ NUEVO: deshabilitar presupuesto (borrado suave)
+async function deshabilitarPresupuestoAPI(id) {
+  const res = await fetch(
+    `http://localhost:3000/presupuestos/deshabilitar/${id}`,
+    { method: "PUT" }
+  );
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.message || "Error al deshabilitar presupuesto");
+  }
+
+  return await res.json();
 }
 
 function calcularEstado(budget, hoy = new Date()) {
@@ -56,6 +92,9 @@ export default function Presupuestos() {
   const [presupuestos, setPresupuestos] = useState([]);
   const [categorias, setCategorias] = useState([]);
 
+  // ✅ NUEVO: modo edición
+  const [editingId, setEditingId] = useState(null);
+
   // Filtros
   const [fPeriodo, setFPeriodo] = useState("");
   const [fCategoriaId, setFCategoriaId] = useState("");
@@ -63,37 +102,22 @@ export default function Presupuestos() {
   const [fFechaFin, setFFechaFin] = useState("");
 
   useEffect(() => {
-  const cargarDatos = async () => {
-    // Cargar categorías desde API
-    const cats = await fetchCategoriasAPI();
-    setCategorias(cats);
+    const cargarDatos = async () => {
+      const cats = await fetchCategoriasAPI();
+      setCategorias(cats);
 
-    // Cargar presupuestos desde API
-    const presup = await fetchPresupuestosAPI();
-    setPresupuestos(presup);
-  };
+      const presup = await fetchPresupuestosAPI();
+      setPresupuestos(presup);
+    };
 
-  cargarDatos();
-}, []);
-
-  // useEffect(() => {
-  //   const loadCategorias = async () => {
-  //   const list = await fetchCategoriasAPI();
-  //   setCategorias(list);
-    
-  //   loadCategorias();
-
-  //   const presup = await fetchPresupuestosAPI();
-  //   setPresupuestos(presup);
-  // };
-
-  // cargarDatos();
-  // }, []);
+    cargarDatos();
+  }, []);
 
   const presupuestosFiltrados = useMemo(() => {
     return presupuestos.filter((p) => {
       const okPeriodo = !fPeriodo || p.periodo === fPeriodo;
-      const okCat = !fCategoriaId || String(p.categoriaId) === String(fCategoriaId);
+      const okCat =
+        !fCategoriaId || String(p.categoriaId) === String(fCategoriaId);
 
       const d = p.fechaInicio ? new Date(p.fechaInicio) : null;
       const dFin = p.fechaFin ? new Date(p.fechaFin) : null;
@@ -134,27 +158,74 @@ export default function Presupuestos() {
   };
 
   const obtenerNombreCategoria = (idCategoria) => {
-    const categoria = categorias.find((c) => String(c.idCategoria) === String(idCategoria));
+    const categoria = categorias.find(
+      (c) => String(c.idCategoria) === String(idCategoria)
+    );
     return categoria ? categoria.nombre : idCategoria;
+  };
+
+  // ✅ NUEVO: Editar (por ahora solo activa modo edición)
+  // Si quieres editar en esta MISMA pantalla, necesitas un formulario aquí o redirigir a /presupuesto/nuevo?id=...
+  const handleEditClick = (p) => {
+    setEditingId(p.idPresupuesto);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // ✅ NUEVO: Deshabilitar (borrado suave)
+  const handleDeshabilitarClick = async (id) => {
+    if (!window.confirm("¿Deseas deshabilitar este presupuesto?")) return;
+
+    try {
+      await deshabilitarPresupuestoAPI(id);
+
+      // marcar como inactivo en memoria
+      setPresupuestos((prev) =>
+        prev.map((x) =>
+          x.idPresupuesto === id ? { ...x, estado: "Inactivo" } : x
+        )
+      );
+    } catch (error) {
+      alert("No se pudo deshabilitar el presupuesto: " + error.message);
+    }
   };
 
   return (
     <div className="container my-4">
-
       {/* Encabezado */}
       <div className="d-flex justify-content-between align-items-center mb-3">
         <div className="d-flex align-items-center gap-2">
-          <a href="/" className="text-decoration-none small"  style={{ color: "#EC8305" }}>
+          <a
+            href="/"
+            className="text-decoration-none small"
+            style={{ color: "#EC8305" }}
+          >
             ← Back
           </a>
           <h4 className="m-0">Gestión de Presupuestos</h4>
         </div>
 
-        {/* Botón para ir al formulario /presupuesto/nuevo */}
-        <a href="/presupuesto/nuevo" className="btn text-light fw-semibold" style={{ backgroundColor: "#EC8305" }}>
+        <a
+          href="/presupuesto/nuevo"
+          className="btn text-light fw-semibold"
+          style={{ backgroundColor: "#EC8305" }}
+        >
           + Nuevo Presupuesto
         </a>
       </div>
+
+      {/* (Opcional) aviso modo edición */}
+      {editingId && (
+        <div className="alert alert-warning py-2">
+          Modo edición activo para ID: <strong>{editingId}</strong>
+          <button
+            type="button"
+            className="btn btn-sm btn-outline-secondary ms-2"
+            onClick={() => setEditingId(null)}
+          >
+            Cancelar
+          </button>
+        </div>
+      )}
 
       {/* Tarjetas resumen */}
       <div className="row mb-3">
@@ -173,9 +244,7 @@ export default function Presupuestos() {
           <div className="card text-bg-light">
             <div className="card-body">
               <h6 className="card-title">Presupuestos vigentes</h6>
-              <p className="card-text fw-bold mb-0">
-                {resumen.vigentes}
-              </p>
+              <p className="card-text fw-bold mb-0">{resumen.vigentes}</p>
             </div>
           </div>
         </div>
@@ -184,9 +253,7 @@ export default function Presupuestos() {
           <div className="card text-bg-light">
             <div className="card-body">
               <h6 className="card-title">Presupuestos vencidos</h6>
-              <p className="card-text fw-bold mb-0">
-                {resumen.vencidos}
-              </p>
+              <p className="card-text fw-bold mb-0">{resumen.vencidos}</p>
             </div>
           </div>
         </div>
@@ -219,7 +286,7 @@ export default function Presupuestos() {
                 onChange={(e) => setFCategoriaId(e.target.value)}
               >
                 <option value="">Todas</option>
-                {categorias.map(c => (
+                {categorias.map((c) => (
                   <option key={c.idCategoria} value={c.idCategoria}>
                     {c.nombre}
                   </option>
@@ -276,19 +343,22 @@ export default function Presupuestos() {
                   <th>Fecha fin</th>
                   <th className="text-end">Monto</th>
                   <th>Estado</th>
-                  {/* <th>Acciones</th>  // Para futuro: editar / eliminar */}
+                  <th className="text-center" style={{ width: "20%" }}>
+                    Acciones
+                  </th>
                 </tr>
               </thead>
+
               <tbody>
                 {presupuestosFiltrados.length === 0 ? (
                   <tr>
-                    <td colSpan="7" className="text-center py-4 text-muted">
+                    <td colSpan="8" className="text-center py-4 text-muted">
                       No hay presupuestos que coincidan con los filtros.
                     </td>
                   </tr>
                 ) : (
                   presupuestosFiltrados.map((p, i) => (
-                    <tr key={p.idPresupuesto ?? p.idPresupuesto ?? i}>
+                    <tr key={p.idPresupuesto ?? i}>
                       <td>{i + 1}</td>
                       <td>{p.periodo}</td>
                       <td>{obtenerNombreCategoria(p.categoriaId)}</td>
@@ -298,10 +368,26 @@ export default function Presupuestos() {
                         {formatearMoneda(p.monto)}
                       </td>
                       <td>{calcularEstado(p)}</td>
-                      {/* <td>
-                        <button className="btn btn-sm btn-outline-primary me-1">Editar</button>
-                        <button className="btn btn-sm btn-outline-danger">Eliminar</button>
-                      </td> */}
+
+                      {/* ✅ BOTONES NUEVOS */}
+                      <td className="text-center">
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-warning me-1"
+                          onClick={() => handleEditClick(p)}
+                        >
+                          ✏️ Editar
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-danger"
+                          onClick={() =>
+                            handleDeshabilitarClick(p.idPresupuesto)
+                          }
+                        >
+                          🚫 Deshabilitar
+                        </button>
+                      </td>
                     </tr>
                   ))
                 )}

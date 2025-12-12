@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const money = (n) =>
   Number(n || 0).toLocaleString("es-HN", {
@@ -11,6 +11,7 @@ export default function PagosHistory() {
   const [pagos, setPagos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const cargar = async () => {
@@ -58,6 +59,32 @@ export default function PagosHistory() {
 
   const getBanco = (pago) => pago.banco?.nombre || "—";
   const getUsuario = (pago) => pago.usuario?.nombre || "—";
+
+  // 🔹 Acción: Borrado suave (deshabilitar)
+  const deshabilitarPago = async (id) => {
+    if (!window.confirm("¿Deseas deshabilitar este pago?")) return;
+
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await fetch(`http://localhost:3000/pagos/deshabilitar/${id}`, {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      });
+
+      if (!res.ok) throw new Error("Error al deshabilitar");
+
+      // 🔹 Actualizar vista sin recargar
+      setPagos((prev) =>
+        prev.map((p) => (p.idPago === id ? { ...p, estado: "Inactivo" } : p))
+      );
+    } catch (error) {
+      alert("No se pudo deshabilitar el registro");
+    }
+  };
 
   return (
     <div className="container mt-4">
@@ -108,6 +135,7 @@ export default function PagosHistory() {
                         <th>Monto</th>
                         <th>Descripción</th>
                         <th>Estado</th>
+                        <th className="text-center">Acciones</th> {/* 👈 NUEVO */}
                       </tr>
                     </thead>
                     <tbody>
@@ -120,6 +148,21 @@ export default function PagosHistory() {
                           <td>{money(pago.monto)}</td>
                           <td>{pago.descripcion || "—"}</td>
                           <td>{pago.estado || "—"}</td>
+                          {/* 👇 Botones agregados */}
+                          <td className="text-center">
+                            <button
+                              className="btn btn-sm btn-warning me-1"
+                              onClick={() => navigate(`/pagos/editar/${pago.idPago}`)}
+                            >
+                              ✏️ Editar
+                            </button>
+                            <button
+                              className="btn btn-sm btn-danger"
+                              onClick={() => deshabilitarPago(pago.idPago)}
+                            >
+                              🚫 Deshabilitar
+                            </button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -133,3 +176,4 @@ export default function PagosHistory() {
     </div>
   );
 }
+
