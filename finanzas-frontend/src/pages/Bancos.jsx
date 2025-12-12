@@ -2,83 +2,129 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
-const LS_BANKS = "ff_bancos";
+// 🔹 API helpers
+async function crearBancoAPI(payload) {
+  const res = await fetch("http://localhost:3000/bancos", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
 
-function loadBanks() {
- try {
-    const raw = localStorage.getItem(LS_BANKS);
-    if (!raw) return [];
-    const list = JSON.parse(raw);
-    if (!Array.isArray(list)) return [];
-    return list;
-  } catch {
-    return [];
-  }
+  if (!res.ok) throw new Error("Error al crear banco");
+  return await res.json();
 }
 
-function saveBanks(list) {
-  localStorage.setItem(LS_BANKS, JSON.stringify(list));
+async function actualizarBancoAPI(id, payload) {
+  const res = await fetch(
+    `http://localhost:3000/bancos/actualizar/${id}`,
+    {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    }
+  );
+
+  if (!res.ok) throw new Error("Error al actualizar banco");
+  return await res.json();
+}
+
+async function deshabilitarBancoAPI(id) {
+  const res = await fetch(
+    `http://localhost:3000/bancos/deshabilitar/${id}`,
+    {
+      method: "PUT",
+    }
+  );
+
+  if (!res.ok) throw new Error("Error al deshabilitar banco");
+  return await res.json();
 }
 
 export default function Bancos() {
   const [bancos, setBancos] = useState([]);
   const [nombre, setNombre] = useState("");
-  
+
+  // 🔹 NUEVO: modo edición
+  const [editingId, setEditingId] = useState(null);
 
   useEffect(() => {
-      const cargar = async () => {
-        try {
-          const res = await fetch("http://localhost:3000/bancos");/*,{
-            headers:{
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${token}`
-            }
-          });
-          if(!res.ok){
-            throw new Error("No autorizado");
-          }*/
-          const data = await res.json();
-          setBancos(data);
-        } catch (error) {
-          console.error("Error al cargar las bancos", error);
-        }
-      };
-      cargar();
-    }, []);
+    const cargar = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/bancos");
+        const data = await res.json();
+        setBancos(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error("Error al cargar los bancos", error);
+      }
+    };
+    cargar();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if(!nombre.trim()){
-      alert("El nombre del banco es obligatorio")
+
+    if (!nombre.trim()) {
+      alert("El nombre del banco es obligatorio");
       return;
     }
 
     try {
-      const res = await fetch("http://localhost:3000/bancos",{
-        method:"POST",
-        headers:{
-          "Content-Type":"application/json"
-        },
-        body: JSON.stringify({
-        nombre: nombre.trim()
-      })
-      });
-      if(!res.ok){
-        throw new Error("Error al insertar banco!");
+      if (editingId === null) {
+        // 🔹 Crear
+        const nuevoBanco = await crearBancoAPI({
+          nombre: nombre.trim(),
+        });
+        setBancos((prev) => [...prev, nuevoBanco]);
+        alert("Banco registrado exitosamente");
+      } else {
+        // 🔹 Actualizar
+        const bancoActualizado = await actualizarBancoAPI(editingId, {
+          nombre: nombre.trim(),
+        });
+
+        setBancos((prev) =>
+          prev.map((b) =>
+            b.idBanco === editingId ? bancoActualizado : b
+          )
+        );
+        alert("Banco actualizado correctamente");
       }
-      const nuevoBanco = await res.json();
-      setBancos([...bancos,nuevoBanco]);
+
+      // limpiar form
       setNombre("");
-      alert("Banco registrado exitosamente");
+      setEditingId(null);
     } catch (error) {
-      console.error("Error guardando banco",error);
-      alert("Ocurrio un error al guardar el")
+      alert(error.message);
+    }
+  };
+
+  // 🔹 Editar
+  const handleEditClick = (banco) => {
+    setEditingId(banco.idBanco);
+    setNombre(banco.nombre || "");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // 🔹 Deshabilitar
+  const handleDeshabilitarClick = async (id) => {
+    if (!window.confirm("¿Deseas deshabilitar este banco?")) return;
+
+    try {
+      await deshabilitarBancoAPI(id);
+
+      setBancos((prev) =>
+        prev.map((b) =>
+          b.idBanco === id ? { ...b, estado: "Inactivo" } : b
+        )
+      );
+    } catch (error) {
+      alert("No se pudo deshabilitar el banco");
     }
   };
 
   return (
     <div className="container mt-4">
-      {/* Encabezado con Back */}
+      {/* Encabezado */}
       <div className="d-flex align-items-center gap-2 mb-3">
         <Link
           to="/"
@@ -92,9 +138,12 @@ export default function Bancos() {
 
       <div className="card border-2 border-secondary-subtle">
         <div className="card-body">
-          {/* Formulario arriba */}
+          {/* Formulario */}
           <div className="mb-4">
-            <h5 className="card-title mb-3">Nuevo Banco</h5>
+            <h5 className="card-title mb-3">
+              {editingId ? "Editar Banco" : "Nuevo Banco"}
+            </h5>
+
             <form onSubmit={handleSubmit} className="row g-3">
               <div className="col-12 col-md-8">
                 <label className="form-label">Nombre del banco *</label>
@@ -103,7 +152,7 @@ export default function Bancos() {
                   className="form-control"
                   value={nombre}
                   onChange={(e) => setNombre(e.target.value)}
-                  placeholder="Ej. Banco Atlántida, BAC, FICOHSA"
+                  placeholder="Ej. BAC, FICOHSA, Atlántida"
                   required
                 />
               </div>
@@ -114,7 +163,7 @@ export default function Bancos() {
                   className="btn fw-semibold text-light w-100"
                   style={{ backgroundColor: "#EC8305" }}
                 >
-                  Guardar
+                  {editingId ? "Actualizar" : "Guardar"}
                 </button>
               </div>
             </form>
@@ -122,7 +171,7 @@ export default function Bancos() {
 
           <hr />
 
-          {/* Tabla abajo */}
+          {/* Tabla */}
           <div>
             <h5 className="card-title mb-3">Bancos registrados</h5>
 
@@ -132,12 +181,16 @@ export default function Bancos() {
                   <tr>
                     <th style={{ width: "10%" }}>ID</th>
                     <th>Nombre</th>
+                    <th className="text-center" style={{ width: "20%" }}>
+                      Acciones
+                    </th>
                   </tr>
                 </thead>
+
                 <tbody>
                   {bancos.length === 0 ? (
                     <tr>
-                      <td colSpan="2" className="text-center text-muted">
+                      <td colSpan="3" className="text-center text-muted">
                         No hay bancos registrados.
                       </td>
                     </tr>
@@ -146,14 +199,32 @@ export default function Bancos() {
                       <tr key={b.idBanco}>
                         <td>{b.idBanco}</td>
                         <td>{b.nombre}</td>
+                        <td className="text-center">
+                          <button
+                            className="btn btn-sm btn-warning me-1"
+                            type="button"
+                            onClick={() => handleEditClick(b)}
+                          >
+                            ✏️ Editar
+                          </button>
+                          <button
+                            className="btn btn-sm btn-danger"
+                            type="button"
+                            onClick={() =>
+                              handleDeshabilitarClick(b.idBanco)
+                            }
+                          >
+                            🚫 Deshabilitar
+                          </button>
+                        </td>
                       </tr>
                     ))
                   )}
                 </tbody>
               </table>
             </div>
-
           </div>
+
         </div>
       </div>
     </div>
