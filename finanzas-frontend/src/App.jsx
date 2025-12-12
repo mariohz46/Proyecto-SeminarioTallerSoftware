@@ -1,45 +1,31 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
-import Login from './pages/Login.jsx'
-import Register from './pages/Register.jsx'
-import NewTransaction from './pages/NewTransaction.jsx'
-import Dashboard from './pages/Dashboard.jsx'
-import Navbar from './components/NavBar.jsx'
-import TransactionHistory from "./pages/TransactionHistory";
-import BudgetForm from "./pages/BudgetForm";
-import Presupuestos from "./pages/Presupuestos";
+import { Routes, Route, Navigate } from "react-router-dom";
+
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Dashboard from "./pages/Dashboard";
 import Categorias from "./pages/Categorias";
 import Bancos from "./pages/Bancos";
 import PagosHistory from "./pages/PagosHistory";
-import NewPago from "./pages/NewPago";
-
-
-
-
+import Presupuestos from "./pages/Presupuestos";
+import TransactionHistory from "./pages/TransactionHistory";
+import NavBar from "./components/NavBar";
 
 export default function App() {
   return (
-    
-    <div className=".container">
-      <Navbar />
-      <main>
-        <Routes>
-          <Route path="/" element={<Navigate to="/login" />} />
-           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/registro" element={<Register />} />
-          <Route path="/transacciones/nueva" element={<NewTransaction />} />
-          <Route path="/historial" element={<TransactionHistory />} />
-          <Route path="/presupuesto/nuevo" element={<BudgetForm />} />
-          <Route path="/presupuestos" element={<Presupuestos />} />
-          <Route path="/pagos" element={<PagosHistory />} />
-          <Route path="/pagos/nuevo" element={<NewPago />} />
-
-          <Route path="/categorias" element={<Categorias />} />
-          <Route path="/bancos" element={<Bancos />} />
-
-          <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
-      </main>
-    </div>
-  )
+    <>
+      <NavBar />
+      <Routes>
+        <Route path="/" element={<Navigate to="/login" />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/registro" element={<Register />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/categorias" element={<Categorias />} />
+        <Route path="/bancos" element={<Bancos />} />
+        <Route path="/pagos" element={<PagosHistory />} />
+        <Route path="/presupuestos" element={<Presupuestos />} />
+        <Route path="/historial" element={<TransactionHistory />} />
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+    </>
+  );
 }
