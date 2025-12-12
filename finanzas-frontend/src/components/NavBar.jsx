@@ -130,7 +130,7 @@ export default function Navbar() {
 
                 <li className="nav-item">
                   <NavLink
-                    to="/reportes"
+                    to="/login"
                     className={({ isActive }) =>
                       "nav-link " + (isActive ? "active fw-bold" : "")
                     }
