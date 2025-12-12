@@ -62,7 +62,8 @@ async function obtenerCategoria(req,res){
 // }
 async function modificarCategoria(req,res){
     try {
-        const {idCategoria,nombre,tipo,descripcion}=req.body;
+        const {idCategoria} = req.params
+        const {nombre,tipo,descripcion}=req.body;
 
         const categoria =await categoriasService.modificarCategoria({idCategoria,nombre,tipo,descripcion});
         res.status(201).json('Categoria modificada exitosamente',{

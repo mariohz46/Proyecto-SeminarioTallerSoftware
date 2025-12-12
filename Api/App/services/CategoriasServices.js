@@ -26,7 +26,7 @@ async function getCategorias() {
     return await Categoria.findAll();
 }
 
-async function modificarCategoria({ idCategoria, nombre, tipo, descripcion }) {
+async function modificarCategoria({idCategoria, nombre, tipo, descripcion }) {
     const revisarCategorias = await Categoria.findOne({ where: { idCategoria } });
     if (!revisarCategorias) {
         throw new Error('La categoria no existe');

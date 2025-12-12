@@ -206,10 +206,8 @@ export default function Presupuestos() {
               >
                 <option value="">Todos</option>
                 <option value="Semanal">Semanal</option>
-                <option value="Quincenal">Quincenal</option>
                 <option value="Mensual">Mensual</option>
-                <option value="Trimestral">Trimestral</option>
-                <option value="Anual">Anual</option>
+                <option value="anual">Anual</option>
               </select>
             </div>
 
