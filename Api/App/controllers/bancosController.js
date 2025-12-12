@@ -1,13 +1,13 @@
-const bancoService = require('../services/BancosServices');
-const Bancos = require('../models/BancosModel'); 
-/* listado de bancos */
-async function listarBancos(req, res) {
-  try {
-    const bancos = await bancoService.getBancos();
-    res.json(bancos);
-  } catch (error) {
-    res.status(500).json({ message: "Error al obtener los bancos", error });
-  }
+const bancoService= require('../services/BancosServices');
+const Bancos = require('../models/BancosModel');
+/*listado de bancos */
+async function listarBancos(req,res){
+    try {
+        const bancos = await bancoService.getBancos();
+        res.json(bancos);
+    } catch (error) {
+        res.status(500).json({message:"Error al obtener los bancos",error});
+    }
 }
 
 async function crearBanco(req, res) {

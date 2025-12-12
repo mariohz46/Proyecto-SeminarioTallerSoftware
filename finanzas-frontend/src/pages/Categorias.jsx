@@ -39,9 +39,9 @@ async function fetchCategoriasAPI() {
   }
 }
 
-function saveCategories(list) {
+/*function saveCategories(list) {
   localStorage.setItem(LS_CATEGORIES, JSON.stringify(list));
-}
+}*/
 
 // 🔹 NUEVO: actualizar categoría en API (ajusta el endpoint si tu backend usa otro nombre)
 async function actualizarCategoriaAPI(id, categoria) {
@@ -65,6 +65,9 @@ async function actualizarCategoriaAPI(id, categoria) {
 async function deshabilitarCategoriaAPI(id) {
   const res = await fetch(`http://localhost:3000/categorias/eliminarCategoria/${id}`, {
     method: "DELETE",
+    headers: {
+      "Content-Type": "application/json"
+    }
   });
 
   if (!res.ok) {
@@ -101,26 +104,30 @@ export default function Categorias() {
     }
 
     const datosCategoria = {
-      nombre: nombre.trim(),
+      nombre,
       tipo,
-      descripcion: descripcion.trim(),
+      descripcion
     };
 
     try {
       if (editingId === null) {
         // 🔸 Crear (misma lógica que ya tenías)
-        const categoriaCreada = await crearCategoriaAPI(datosCategoria);
-        setCategorias((prev) => [...prev, categoriaCreada]);
+        const response = await crearCategoriaAPI(datosCategoria);
+
+        if (!response?.categoria?.idCategoria) {
+          console.error("Respuesta inválida del backend:", response);
+          return;
+        }
+
+        setCategorias((prev) => [...prev, response.categoria]);
       } else {
-        // 🔹 Actualizar
-        const categoriaActualizada = await actualizarCategoriaAPI(
-          editingId,
-          datosCategoria
-        );
+        await actualizarCategoriaAPI(editingId, datosCategoria);
 
         setCategorias((prev) =>
           prev.map((c) =>
-            c.idCategoria === editingId ? categoriaActualizada : c
+            c.idCategoria === editingId
+              ? { ...c, ...datosCategoria }
+              : c
           )
         );
       }
@@ -156,12 +163,14 @@ export default function Categorias() {
     try {
       await deshabilitarCategoriaAPI(id);
 
-      // Actualizar la lista en memoria (la marcamos como Inactiva)
+      /* Actualizar la lista en memoria (la marcamos como Inactiva)
       setCategorias((prev) =>
         prev.map((c) =>
           c.idCategoria === id ? { ...c, estado: "Inactiva" } : c
         )
       );
+      */
+      setCategorias(prev => prev.filter(x => Number(x.idCategoria) !== Number(id)));
     } catch (error) {
       alert("No se pudo deshabilitar la categoría: " + error.message);
     }
@@ -208,8 +217,8 @@ export default function Categorias() {
                   value={tipo}
                   onChange={(e) => setTipo(e.target.value)}
                 >
-                  <option value="Egreso">Egreso</option>
-                  <option value="Ingreso">Ingreso</option>
+                  <option value="egreso">Egreso</option>
+                  <option value="ingreso">Ingreso</option>
                 </select>
               </div>
 

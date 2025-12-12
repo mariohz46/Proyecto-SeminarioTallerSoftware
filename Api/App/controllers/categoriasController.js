@@ -85,14 +85,18 @@ async function eliminarCategoria(req,res){
     try {
         const {idCategoria}=req.params;
 
-        const categoria =await categoriasService.eliminarCategoria(idCategoria);
-        res.status(201).json('Categoria eliminada exitosamente',{categoria})
+        const categoria = await categoriasService.eliminarCategoria(idCategoria);
+
+        res.status(200).json({
+            message: 'Categoria eliminada exitosamente',
+            categoria
+        });
+
     } catch (error) {
         console.error(error); 
         res.status(400).json({
             message: error.message,
-            stack: error.stack,       
-            error: error              
+            error
         });
     }
 }

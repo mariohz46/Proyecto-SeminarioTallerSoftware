@@ -2,7 +2,8 @@ const presupuestosService = require('../services/presupuestosService');
 
 async function crearPresupuesto(req,res){
     try {
-        const {usuarioId,categoriaId, monto, periodo, fechaInicio, fechaFin, descripcion}=req.body;
+        const usuarioId = req.usuario.idUsuario;
+        const {categoriaId, monto, periodo, fechaInicio, fechaFin, descripcion}=req.body;
 
         const presupuesto =await presupuestosService.crearPresupuesto({usuarioId,categoriaId, monto, periodo, fechaInicio, fechaFin, descripcion});
         res.status(201).json('Presupuesto creado exitosamente',{
