@@ -131,12 +131,14 @@ export default function TransactionHistory() {
     try {
       await deshabilitarTransaccionAPI(id);
 
-      // marcar como inactiva en memoria
+      /* marcar como inactiva en memoria
       setAll((prev) =>
         prev.map((x) =>
           x.idTransaccion === id ? { ...x, estado: "Inactiva" } : x
         )
-      );
+      );*/
+
+      setAll(prev => prev.filter(x=>x.idTransaccion !==id));
     } catch (error) {
       alert("No se pudo deshabilitar la transacción: " + error.message);
     }
@@ -286,13 +288,7 @@ export default function TransactionHistory() {
                           <td className="text-end fw-semibold">{money(t.monto)}</td>
 
                           <td className="text-center">
-                            <button
-                              className="btn btn-sm btn-warning me-1"
-                              type="button"
-                              onClick={() => handleEditClick(t)}
-                            >
-                              ✏️ Editar
-                            </button>
+                            
                             <button
                               className="btn btn-sm btn-danger"
                               type="button"

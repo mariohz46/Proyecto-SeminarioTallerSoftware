@@ -30,6 +30,7 @@ async function crearTransaccion(data) {
   }
 }
 
+
 module.exports = {
   listarTransacciones,
   crearTransaccion
