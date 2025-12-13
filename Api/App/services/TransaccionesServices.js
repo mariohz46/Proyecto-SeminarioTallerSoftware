@@ -28,9 +28,7 @@ async function listarTransaccionesPorUsuario(usuarioId) {
     });
 }
 
-module.exports = {
-    listarTransaccionesPorUsuario
-};
+
 
 async function crearTransaccion(data) {
   try {
@@ -43,6 +41,6 @@ async function crearTransaccion(data) {
 
 
 module.exports = {
-  listarTransacciones,
+  listarTransaccionesPorUsuario,
   crearTransaccion
 };
