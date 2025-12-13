@@ -3,7 +3,7 @@ const Usuarios = require("../models/UsuariosModel");
 const Bancos = require("../models/BancosModel");
 const Categorias = require("../models/CategoriasModel");
 
-async function listarTransacciones() {
+/*async function listarTransacciones() {
   try {
     const transacciones = await Transacciones.findAll({
       include: [
@@ -19,7 +19,18 @@ async function listarTransacciones() {
     console.error("ERROR al listar transacciones:", error);
     throw error;
   }
+}*/
+
+async function listarTransaccionesPorUsuario(usuarioId) {
+    return await Transacciones.findAll({
+        where: { usuarioId },
+        order: [["fecha", "DESC"], ["idTransaccion", "DESC"]]
+    });
 }
+
+module.exports = {
+    listarTransaccionesPorUsuario
+};
 
 async function crearTransaccion(data) {
   try {

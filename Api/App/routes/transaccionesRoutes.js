@@ -6,7 +6,7 @@ const {autenticarToken} =require('../services/authTokenServices');
 
 //router.post('/',autenticarToken,TransaccionesController.crearTransaccion);
 router.post('/',TransaccionesController.crearTransaccion);
-router.get('/',TransaccionesController.getTransacciones);
+router.get('/',autenticarToken,TransaccionesController.getTransacciones);
 router.put('/deshabilitar/:id',TransaccionesController.eliminarTransacciones);
 
 module.exports =router;

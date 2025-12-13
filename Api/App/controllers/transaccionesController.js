@@ -3,7 +3,7 @@ const TransaccionesServices = require('../services/TransaccionesServices');
 
 async function crearTransaccion(req, res) {
     try {
-        const idUsuarioAutenticado =  req.body.usuarioId;
+        const idUsuarioAutenticado =  req.usuario.usuarioId;
          let fechaMySQL = null;
 
         if (req.body.fecha) {
@@ -32,10 +32,22 @@ async function crearTransaccion(req, res) {
     }
 }
 
-
+/*
 async function getTransacciones(req, res) {
     try {
         const data = await TransaccionesServices.listarTransacciones();
+        res.json(data);
+    } catch (error) {
+        console.error("Error obteniendo transacciones:", error);
+        res.status(500).json({ error: "Error obteniendo transacciones" });
+    }
+}
+*/
+async function getTransacciones(req, res) {
+    try {
+        const idUsuario = req.usuario.idUsuario;
+
+        const data = await TransaccionesServices.listarTransaccionesPorUsuario(idUsuario);
         res.json(data);
     } catch (error) {
         console.error("Error obteniendo transacciones:", error);
