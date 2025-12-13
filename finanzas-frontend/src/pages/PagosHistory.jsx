@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 const money = (n) =>
   Number(n || 0).toLocaleString("es-HN", {
@@ -11,37 +11,27 @@ export default function PagosHistory() {
   const [pagos, setPagos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const cargar = async () => {
-      setLoading(true);
-      setError(null);
-
       try {
         const token = localStorage.getItem("token");
 
         const res = await fetch("http://localhost:3000/pagos/listar", {
           headers: {
-            "Authorization": `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
         });
 
         if (!res.ok) {
-          throw new Error("No autorizado, token inválido o expirado");
+          throw new Error("No autorizado");
         }
 
         const data = await res.json();
-
-        if (!Array.isArray(data)) {
-          throw new Error("Respuesta inesperada del servidor");
-        }
-
-        setPagos(data);
-      } catch (error) {
-        console.error("Error cargando pagos:", error);
-        setError(error.message);
-        setPagos([]); 
+        setPagos(Array.isArray(data) ? data : []);
+      } catch (err) {
+        setError(err.message);
+        setPagos([]);
       } finally {
         setLoading(false);
       }
@@ -53,42 +43,39 @@ export default function PagosHistory() {
   const formatFecha = (value) => {
     if (!value) return "—";
     const d = new Date(value);
-    if (isNaN(d.getTime())) return value;
-    return d.toLocaleDateString("es-HN");
+    return isNaN(d.getTime()) ? value : d.toLocaleDateString("es-HN");
   };
 
-  const getBanco = (pago) => pago.banco?.nombre || "—";
-  const getUsuario = (pago) => pago.usuario?.nombre || "—";
-
-  // 🔹 Acción: Borrado suave (deshabilitar)
   const deshabilitarPago = async (id) => {
     if (!window.confirm("¿Deseas deshabilitar este pago?")) return;
 
     try {
       const token = localStorage.getItem("token");
 
-      const res = await fetch(`http://localhost:3000/pagos/deshabilitar/${id}`, {
-        method: "PUT",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
+      const res = await fetch(
+        `http://localhost:3000/pagos/deshabilitar/${id}`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-      });
-
-      if (!res.ok) throw new Error("Error al deshabilitar");
-
-      // 🔹 Actualizar vista sin recargar
-      setPagos((prev) =>
-        prev.map((p) => (p.idPago === id ? { ...p, estado: "Inactivo" } : p))
       );
-    } catch (error) {
-      alert("No se pudo deshabilitar el registro");
+
+      if (!res.ok) throw new Error();
+
+      setPagos((prev) =>
+        prev.map((p) =>
+          p.idPago === id ? { ...p, estado: "Inactivo" } : p
+        )
+      );
+    } catch {
+      alert("No se pudo deshabilitar el pago");
     }
   };
 
   return (
     <div className="container mt-4">
-      {/* Encabezado */}
       <div className="d-flex align-items-center gap-2 mb-3">
         <Link
           to="/"
@@ -135,28 +122,27 @@ export default function PagosHistory() {
                         <th>Monto</th>
                         <th>Descripción</th>
                         <th>Estado</th>
-                        <th className="text-center">Acciones</th> {/* 👈 NUEVO */}
+                        <th className="text-center">Acciones</th>
                       </tr>
                     </thead>
                     <tbody>
                       {pagos.map((pago, index) => (
-                        <tr key={pago.idPago || index}>
+                        <tr key={pago.idPago}>
                           <td>{index + 1}</td>
                           <td>{formatFecha(pago.fechaPago)}</td>
-                          <td>{getBanco(pago)}</td>
-                          <td>{getUsuario(pago)}</td>
+                          <td>{pago.banco?.nombre || "—"}</td>
+                          <td>{pago.usuario?.nombre || "—"}</td>
                           <td>{money(pago.monto)}</td>
                           <td>{pago.descripcion || "—"}</td>
                           <td>{pago.estado || "—"}</td>
-                          {/* 👇 Botones agregados */}
                           <td className="text-center">
-  <button
-    className="btn btn-sm btn-danger"
-    onClick={() => deshabilitarPago(pago.idPago)}
-  >
-    🚫 Deshabilitar
-  </button>
-</td>
+                            <button
+                              className="btn btn-sm btn-danger"
+                              onClick={() => deshabilitarPago(pago.idPago)}
+                            >
+                              🚫 Deshabilitar
+                            </button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -170,4 +156,3 @@ export default function PagosHistory() {
     </div>
   );
 }
-

@@ -18,26 +18,7 @@ const readAll = () => {
   }
 };
 
-// ✅ NUEVO: actualizar transacción (ajusta el endpoint si tu backend usa otro)
-async function actualizarTransaccionAPI(id, payload) {
-  const res = await fetch(
-    `http://localhost:3000/transacciones/actualizar/${id}`,
-    {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    }
-  );
 
-  if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.message || "Error al actualizar transacción");
-  }
-
-  return await res.json();
-}
-
-// ✅ NUEVO: deshabilitar transacción (borrado suave)
 async function deshabilitarTransaccionAPI(id) {
   const res = await fetch(
     `http://localhost:3000/transacciones/deshabilitar/${id}`,
@@ -67,7 +48,16 @@ export default function TransactionHistory() {
   useEffect(() => {
     const cargar = async () => {
       try {
-        const res = await fetch("http://localhost:3000/transacciones");
+        const token = localStorage.getItem("token"); 
+        if (!token) {
+          console.error("Token no encontrado");
+          return;
+        }
+        const res = await fetch("http://localhost:3000/transacciones", {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
         const data = await res.json();
         setAll(Array.isArray(data) ? data : []);
       } catch (error) {
@@ -138,7 +128,7 @@ export default function TransactionHistory() {
         )
       );*/
 
-      setAll(prev => prev.filter(x=>x.idTransaccion !==id));
+      setAll(prev => prev.filter(x => x.idTransaccion !== id));
     } catch (error) {
       alert("No se pudo deshabilitar la transacción: " + error.message);
     }
@@ -288,7 +278,7 @@ export default function TransactionHistory() {
                           <td className="text-end fw-semibold">{money(t.monto)}</td>
 
                           <td className="text-center">
-                            
+
                             <button
                               className="btn btn-sm btn-danger"
                               type="button"

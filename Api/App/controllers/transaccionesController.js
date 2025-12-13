@@ -2,34 +2,25 @@ const Transacciones = require('../models/TransaccionesModel');
 const TransaccionesServices = require('../services/TransaccionesServices');
 
 async function crearTransaccion(req, res) {
-    try {
-        const idUsuarioAutenticado =  req.usuario.usuarioId;
-         let fechaMySQL = null;
+  try {
+    const idUsuarioAutenticado = req.usuario.idUsuario;
 
-        if (req.body.fecha) {
-            const partes = req.body.fecha.split("/");
-            
-            fechaMySQL = `${partes[2]}-${partes[1]}-${partes[0]}`;
-        }
+    const data = {
+      ...req.body,
+      usuarioId: idUsuarioAutenticado,
+      fecha: req.body.fecha || null,
+      creadoEl: new Date()
+    };
 
-        const data = {
-            ...req.body,
-            fecha:fechaMySQL,
-            usuarioId: idUsuarioAutenticado,
-            creadoEl: new Date()
-        }
+    const nuevaTransaccion = await Transacciones.create(data);
+    res.status(201).json(nuevaTransaccion);
 
-        const nuevaTransaccion = await Transacciones.create(data);
-        res.status(201).json(nuevaTransaccion);
-
-    } catch (error) {
-        console.error(error);
-        res.status(400).json({
-            message: error.message,
-            stack: error.stack,
-            error: error
-        });
-    }
+  } catch (error) {
+    console.error("Error al crear transacción:", error);
+    res.status(400).json({
+      message: error.message
+    });
+  }
 }
 
 /*

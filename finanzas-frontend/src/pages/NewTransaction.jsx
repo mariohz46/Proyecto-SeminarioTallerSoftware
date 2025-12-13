@@ -65,8 +65,8 @@ export default function NewTransaction() {
     }
 
     try {
+      const token = localStorage.getItem("token");
       const payload = {
-        usuarioId: JSON.parse(localStorage.getItem("usuario")).idUsuario,
         tipo,
         monto: parseFloat(monto),
         descripcion: descripcion.trim(),
@@ -78,7 +78,8 @@ export default function NewTransaction() {
       await fetch("http://localhost:3000/transacciones", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify(payload)
       });
@@ -166,7 +167,7 @@ export default function NewTransaction() {
               <div className="col">
                 <label htmlFor='categoria' className='form-label'>Categoria</label>
 
-                
+
 
                 <select
                   className="form-select"

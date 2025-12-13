@@ -23,9 +23,13 @@ const Categorias = require("../models/CategoriasModel");
 
 async function listarTransaccionesPorUsuario(usuarioId) {
     return await Transacciones.findAll({
-        where: { usuarioId },
-        order: [["fecha", "DESC"], ["idTransaccion", "DESC"]]
-    });
+    where: { usuarioId},
+    include: [
+      { model: Categorias, as: "Categoria" },
+      { model: Bancos, as: "banco" }
+    ],
+    order: [["fecha", "DESC"]]
+  });
 }
 
 
